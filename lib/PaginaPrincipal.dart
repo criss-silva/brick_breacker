@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moviles/jugador.dart';
 import 'dart:async';
 // Asegúrate de que este import sea correcto según tu proyecto
 import 'package:moviles/pelota.dart';
@@ -12,6 +13,9 @@ class PaginaPrincipal extends StatefulWidget {
 class _PaginaPrincipalState extends State<PaginaPrincipal> {
   double ballX = 0;
   double ballY = 0;
+  //posiciones jugador
+  double jugadorX =0;
+  double jugadorWidth = 0.3;
   bool juegoEmpezado = false;
 
   void EmpezarJuego() {
@@ -40,6 +44,11 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
                 posX: ballX,
                 posY: ballY,
               ), // 3. Quitamos el paréntesis extra que tenías aquí
+              //jugador
+              Jugador(
+                posX: jugadorX,
+                jugadorWidth: jugadorWidth,
+              )
             ],
           ),
         ),
