@@ -13,6 +13,6 @@ class Cubierta extends StatelessWidget{
         style : TextStyle(color: Colors.deepPurple[400]),
       ), //text
     ); //container
-  };
+  }
 
 }
