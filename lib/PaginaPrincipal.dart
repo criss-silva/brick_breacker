@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:moviles/jugador.dart';
 import 'package:moviles/ladrillos.dart';
 import 'package:moviles/pantallafinal.dart';
+import 'package:moviles/PaginaDeCubierta.dart';
 import 'dart:async';
-// Asegúrate de que este import sea correcto según tu proyecto
 import 'package:moviles/pelota.dart';
 
 
@@ -19,10 +19,10 @@ class PaginaPrincipal extends StatefulWidget {
 class _PaginaPrincipalState extends State<PaginaPrincipal> {
   double ballX = 0;
   double ballY = 0;
-  double incrementoBolaX= 0.1;
-  double incrementoBolaY= 0.1;
-  var direcionXBola= direcciones.AB;
-  var direcionYBola= direcciones.IZQ;
+  double incrementoBolaX= 0.015;
+  double incrementoBolaY= 0.021;
+  var direcionXBola= direcciones.IZQ;
+  var direcionYBola= direcciones.AB;
 
   //posiciones jugador
   double jugadorX =-0.2;
@@ -30,11 +30,23 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   bool juegoEmpezado = false;
   bool juegoAcabado = false;
   //variables para los bloques
-  double ladrilloX =0;
-  double ladrilloY = -0.9;
-  double ladrilloAncho = 0.4;
-  double ladrilloAlto = 0.05;
+  static double primerladrilloX =-1+espaciopared;
+  static double primerladrilloY = -0.9;
+  static double ladrilloAncho = 0.4;
+  static double ladrilloAlto = 0.05;
+  static double espacioladrillo = 0.2;
+  static int numeroladrillos=3;
+  static double espaciopared= 0.5 * (2-numeroladrillos*ladrilloAncho - (numeroladrillos-1)*espacioladrillo);
   bool ladrilloRoto=false;
+
+
+ List miladrillo= [
+   [primerladrilloX +0*(ladrilloAncho+espacioladrillo),primerladrilloY,false],
+  [primerladrilloX +1*(ladrilloAncho+espacioladrillo),primerladrilloY,false],
+  [primerladrilloX +2*(ladrilloAncho+espacioladrillo),primerladrilloY,false]
+
+ ];
+
 //empezar juego
   void EmpezarJuego() {
     juegoEmpezado = true;
@@ -78,7 +90,7 @@ void actualizarDirecion(){
     //comprobaciones horizontales
       if(ballX >=1){
         direcionXBola = direcciones.IZQ;
-      }else if(ballX <= 0.1){
+      }else if(ballX <= -1){
         direcionXBola = direcciones.DER;
       }
     });
@@ -100,21 +112,68 @@ void moverPelota(){
     });
 }
 
+//funcion para encontrar la distancia minima
+  String findMin(double a, double b, double c, double d){
+    List<double> lista =[ a,b,c,d];
+    double currentmin =a;
+    if ((currentmin-a).abs() <0.01) {
+      return 'izq';
+    }
+    else if ((currentmin-b).abs() <0.01) {
+      return 'der';
+    } else
+    if ((currentmin-c).abs() <0.01) {
+      return 'arriba';
+    }
+    if ((currentmin-d).abs() <0.01){
+      return 'abajo';
+    }
+    return '';
+  }
+
 void comprobarLadrillosRotos(){
-    if( ballX >= ladrilloX &&
-        ballX <= ladrilloX + ladrilloAncho &&
-        ballY <=ladrilloY + ladrilloAlto &&
-        ladrilloRoto == false ){
-      setState(() {
-            ladrilloRoto=true;
-            direcionYBola=direcciones.AB;
-      });
+    for (int i=0; i<miladrillo.length;i++) {
+      if (ballX >= miladrillo[i][0] &&
+          ballX <= miladrillo[i][0] + ladrilloAncho &&
+          ballY <= miladrillo[i][1] + ladrilloAlto &&
+          miladrillo[i][2] == false) {
+        setState(() {
+          miladrillo[i][2] = true;
+
+          // como el ladrillo esta roto vamos a actualizar la direccion de la bola según en que lado del ladrillo toque
+          //lo hacemos calculando la distancia de la bola a cada lado y la mas paqueña sera la elegida
+
+          double ladoizqdistancia= (miladrillo[i][0] - ballX.abs());
+          double ladoderdistancia= (miladrillo[i][0] +ladrilloAncho- ballX.abs());
+          double ladoarribadistancia= (miladrillo[i][1] - ballX.abs());
+          double ladoabajodistancia= (miladrillo[i][1] +ladrilloAncho -ballX.abs());
+          String min = findMin(ladoizqdistancia,ladoderdistancia,ladoarribadistancia,ladoabajodistancia);
+          switch (min){
+            case 'izq':
+              direcionXBola=direcciones.IZQ;
+            break;
+            case 'der':
+              direcionXBola=direcciones.DER;
+              break;
+            case 'arriba':
+              direcionYBola=direcciones.ARR;
+              break;
+            case 'abajo':
+              direcionYBola=direcciones.AB;
+              break;
+          }
+
+
+
+
+        });
+      }
     }
 }
 //movimientos a los lados
 void moveLeft(){
   setState(() {
-    if(!(jugadorX - 0.2 <=-1 ))
+    if(!(jugadorX <-1 ))
     {jugadorX -= 0.2;}
   });
 }
@@ -125,6 +184,22 @@ void moveRight(){
     {jugadorX += 0.2;}
   });
   }
+
+  void reseteo(){
+setState(() {
+  jugadorX=-0.2;
+  ballX=0;
+  ballY=0;
+  juegoAcabado=false;
+  juegoEmpezado=false;
+  miladrillo= [
+  [primerladrilloX +0*(ladrilloAncho+espacioladrillo),primerladrilloY,false],
+  [primerladrilloX +1*(ladrilloAncho+espacioladrillo),primerladrilloY,false],
+  [primerladrilloX +2*(ladrilloAncho+espacioladrillo),primerladrilloY,false]
+  ];
+});
+  }
+
   @override
   Widget build(BuildContext context) {
     return RawKeyboardListener(
@@ -147,7 +222,7 @@ void moveRight(){
                 // 1. Cubierta del juego
                 Cubierta(juegoEmpezado: juegoEmpezado),
                 // 2.  final del juego
-                pantallaFinal(juegoAcabado: juegoAcabado),
+                pantallaFinal(juegoAcabado: juegoAcabado, function:reseteo ),
                 // 3. Creamos la pelota en si
                 Pelota(
                   posX: ballX,
@@ -158,11 +233,25 @@ void moveRight(){
                   jugadorWidth: jugadorWidth,
                 ),//ladrillo
                 Ladrillos(
-                  ladrilloX: ladrilloX,
-                  ladrilloY: ladrilloY,
+                  ladrilloX: miladrillo[0][0],
+                  ladrilloY: miladrillo[0][1],
                   ladrilloAlto: ladrilloAlto,
                   ladrilloAncho: ladrilloAncho,
-                  ladrilloRoto: ladrilloRoto,
+                  ladrilloRoto: miladrillo[0][2],
+                ),
+                Ladrillos(
+                  ladrilloX: miladrillo[1][0],
+                  ladrilloY: miladrillo[1][1],
+                  ladrilloAlto: ladrilloAlto,
+                  ladrilloAncho: ladrilloAncho,
+                  ladrilloRoto: miladrillo[1][2],
+                ),
+                Ladrillos(
+                  ladrilloX: miladrillo[2][0],
+                  ladrilloY: miladrillo[2][1],
+                  ladrilloAlto: ladrilloAlto,
+                  ladrilloAncho: ladrilloAncho,
+                  ladrilloRoto: miladrillo[2][2],
                 )
               ],
             ),
@@ -173,20 +262,5 @@ void moveRight(){
   }
 }
 
-// 4. Si el tutorial no te ha dado el código de 'Cubierta' aún,
-// puedes usar este código temporal para que no te de error:
-class Cubierta extends StatelessWidget {
-  final bool juegoEmpezado;
-  Cubierta({required this.juegoEmpezado});
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment(0, -0.2),
-      child: Text(
-        juegoEmpezado ? "" : "T A P  T O  P L A Y",
-        style: TextStyle(color: Colors.white, fontSize: 20),
-      ),
-    );
-  }
-}
+

@@ -13,7 +13,7 @@ class Ladrillos extends StatelessWidget{
   Widget build(BuildContext context) {
     return ladrilloRoto
         ? Container()
-        : Container(alignment: Alignment(ladrilloX, ladrilloY),
+        : Container(alignment: Alignment((2*ladrilloX+ladrilloAncho)/(2-ladrilloAncho), ladrilloY),
           child: ClipRRect(
           borderRadius: BorderRadius.circular(5),
           child: Container(
