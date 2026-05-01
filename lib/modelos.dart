@@ -1,20 +1,27 @@
 // ============================================================
 //  modelos.dart
 //  Modelos de datos de los power-ups.
-//  Los modelos de pelota, jugador y ladrillo están en sus
-//  propios archivos (modelo_pelota.dart, etc.).
+//
+//  TIPOS DE POWER-UP:
+//  ┌─────────────────┬──────────┬──────────────────────────────┐
+//  │ TipoPowerUp     │ Color    │ Efecto                        │
+//  ├─────────────────┼──────────┼──────────────────────────────┤
+//  │ racketaGrande   │ Rosa     │ Ensancha la raqueta 7 s       │
+//  │ tiempoLento     │ Azul     │ Ralentiza la pelota 7 s       │
+//  │ vidaExtra       │ Amarillo │ Suma una vida (máx 5)         │
+//  │ bolaInvencible  │ Morado   │ La pelota rompe todo de un    │
+//  │                 │          │ golpe durante 5 s. Baja prob. │
+//  └─────────────────┴──────────┴──────────────────────────────┘
 // ============================================================
 
-// TipoPowerUp
-// Enumerado con los tres tipos de power-up que existen en el juego.
 enum TipoPowerUp {
-  racketaGrande, // Rosa     → raqueta más grande
-  tiempoLento,   // Azul     → ralentiza la pelota
-  vidaExtra,     // Amarillo → suma una vida (máximo 5)
+  racketaGrande,   // Rosa
+  tiempoLento,     // Azul claro
+  vidaExtra,       // Amarillo
+  bolaInvencible,  // Morado — rompe cualquier bloque de 1 golpe
 }
 
-// ModeloPowerUp
-// Representa UN power-up concreto que está cayendo por la pantalla.
+/// Representa un power-up cayendo por la pantalla
 class ModeloPowerUp {
   double x;
   double y;

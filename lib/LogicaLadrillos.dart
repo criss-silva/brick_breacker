@@ -1,91 +1,280 @@
 // ============================================================
 //  logica_ladrillos.dart
-//  Funciones para generar ladrillos, detectar colisiones con la
-//  pelota y calcular el rebote correspondiente.
-//  No importa Flutter. Opera sobre ModeloLadrillo y ModeloPelota.
+//  Toda la lógica de los ladrillos: generación aleatoria por filas,
+//  colisiones, rebote, regenerador, fantasma y puntuación.
+//  No importa Flutter.
+//
+//  REGLAS DE GENERACIÓN (4 filas, 7 columnas):
+//  ┌──────┬─────────────────────────────────────────────────────────┐
+//  │ Fila │ Tipos posibles y probabilidades                          │
+//  ├──────┼─────────────────────────────────────────────────────────┤
+//  │  1   │ 100% normal1 (1 golpe)                                   │
+//  ├──────┼─────────────────────────────────────────────────────────┤
+//  │  2   │ base normal1 + 20% normal2, 10% pwRosa, 10% pwAzul,      │
+//  │      │ 5% pwAmarillo, 2% pwMorado                               │
+//  ├──────┼─────────────────────────────────────────────────────────┤
+//  │  3   │ base normal2 + 15% normal3, 12% pwRosa, 12% pwAzul,      │
+//  │      │ 8% pwAmarillo, 3% pwMorado, 5% regenerador,              │
+//  │      │ 1% fantasma (único por partida)                          │
+//  ├──────┼─────────────────────────────────────────────────────────┤
+//  │  4   │ 7 tipos equiprobables, todos aguantan 3 golpes           │
+//  └──────┴─────────────────────────────────────────────────────────┘
 // ============================================================
 
+import 'dart:math';
 import 'ModeloLadrillo.dart';
 import 'ModeloPelota.dart';
+import 'modelos.dart';
 
-// ---- Constantes de la cuadrícula de ladrillos ----
-const int    numeroLadrillos        = 3;
-const double anchoLadrillo          = 0.4;
-const double altoLadrillo           = 0.05;
-const double espacioEntreladrillos  = 0.2;
-const double primerLadrilloY        = -0.9;
+// ── Constantes de la cuadrícula ─────────────────────────────────────
+const int    numColumnas       = 7;
+const int    numFilas          = 4;
+const double anchoLadrillo     = 0.26;
+const double altoLadrillo      = 0.06;
+const double espacioHorizontal = 0.02;
+const double espacioVertical   = 0.04;
+const double primerLadrilloY   = -0.95; // Y de la fila más alta (techo)
+const double _margenLateral    = 0.02;
 
-// Calcula el X de inicio para que los ladrillos queden centrados
-const double _espacioPared =
-    0.5 * (2 - numeroLadrillos * anchoLadrillo - (numeroLadrillos - 1) * espacioEntreladrillos);
-const double primerLadrilloX = -1 + _espacioPared;
+// X de inicio para centrar todas las columnas
+const double _anchoTotal = numColumnas * anchoLadrillo +
+    (numColumnas - 1) * espacioHorizontal;
+const double primerLadrilloX =
+    -1 + _margenLateral + (2 - 2 * _margenLateral - _anchoTotal) / 2;
 
-// ------------------------------------------------------------------
-// generarLadrillos
-// Devuelve la lista de ladrillos en su posición inicial (sin romper).
-// ------------------------------------------------------------------
-List<ModeloLadrillo> generarLadrillos() {
-  return List.generate(numeroLadrillos, (i) {
-    return ModeloLadrillo(
-      x: primerLadrilloX + i * (anchoLadrillo + espacioEntreladrillos),
-      y: primerLadrilloY,
-    );
+final _rng = Random();
+
+// ====================================================================
+//  RESULTADO DE COLISIÓN
+//  Devuelve los efectos de un golpe en un ladrillo.
+// ====================================================================
+class ResultadoColision {
+  /// Puntos ganados (0 si el ladrillo no se ha roto del todo)
+  final int puntosGanados;
+
+  /// true si el ladrillo era fantasma y acaba de romperse (x2 score)
+  final bool multiplicarPuntuacion;
+
+  /// Power-up que suelta el ladrillo al romperse (null si ninguno)
+  final TipoPowerUp? tipoPowerUpSoltado;
+
+  /// Posición X del ladrillo golpeado (para spawnear el power-up)
+  final double ladrilloX;
+
+  /// Posición Y del ladrillo golpeado
+  final double ladrilloY;
+
+  const ResultadoColision({
+    this.puntosGanados         = 0,
+    this.multiplicarPuntuacion = false,
+    this.tipoPowerUpSoltado    = null,
+    this.ladrilloX             = 0,
+    this.ladrilloY             = 0,
   });
 }
 
-// ------------------------------------------------------------------
-// todosTroceados
-// Devuelve true cuando todos los ladrillos están rotos (condición WIN).
-// ------------------------------------------------------------------
+// ====================================================================
+//  GENERACIÓN DE LADRILLOS
+// ====================================================================
+
+List<ModeloLadrillo> generarLadrillos() {
+  final List<ModeloLadrillo> lista = [];
+  bool fantasmaColocado = false;
+
+  for (int fila = 0; fila < numFilas; fila++) {
+    final double y = primerLadrilloY + fila * (altoLadrillo + espacioVertical);
+
+    for (int col = 0; col < numColumnas; col++) {
+      final double x =
+          primerLadrilloX + col * (anchoLadrillo + espacioHorizontal);
+
+      final TipoLadrillo tipo = _elegirTipo(fila, fantasmaColocado);
+      if (tipo == TipoLadrillo.fantasma) fantasmaColocado = true;
+
+      // En fila 4 todos aguantan al menos 3 golpes
+      final int golpes = (fila == 3)
+          ? _max3(ModeloLadrillo.golpesIniciales(tipo))
+          : ModeloLadrillo.golpesIniciales(tipo);
+
+      lista.add(ModeloLadrillo(
+        x:               x,
+        y:               y,
+        tipo:            tipo,
+        golpesRestantes: golpes,
+      ));
+    }
+  }
+  return lista;
+}
+
+int _max3(int v) => v < 3 ? 3 : v;
+
+TipoLadrillo _elegirTipo(int fila, bool fantasmaColocado) {
+  final double r = _rng.nextDouble();
+
+  switch (fila) {
+  // ── Fila 1: solo normal1 ──────────────────────────────────────
+    case 0:
+      return TipoLadrillo.normal1;
+
+  // ── Fila 2 ───────────────────────────────────────────────────
+    case 1:
+      if (r < 0.02) return TipoLadrillo.pwMorado;
+      if (r < 0.07) return TipoLadrillo.pwAmarillo;
+      if (r < 0.17) return TipoLadrillo.pwAzul;
+      if (r < 0.27) return TipoLadrillo.pwRosa;
+      if (r < 0.47) return TipoLadrillo.normal2;
+      return TipoLadrillo.normal1;
+
+  // ── Fila 3 ───────────────────────────────────────────────────
+    case 2:
+      if (!fantasmaColocado && r < 0.01) return TipoLadrillo.fantasma;
+      if (r < 0.04) return TipoLadrillo.pwMorado;
+      if (r < 0.09) return TipoLadrillo.regenerador;
+      if (r < 0.17) return TipoLadrillo.pwAmarillo;
+      if (r < 0.29) return TipoLadrillo.pwAzul;
+      if (r < 0.41) return TipoLadrillo.pwRosa;
+      if (r < 0.56) return TipoLadrillo.normal3;
+      return TipoLadrillo.normal2;
+
+  // ── Fila 4: equiprobable, todos con ≥3 golpes ────────────────
+    case 3:
+    default:
+      final List<TipoLadrillo> pool = [
+        TipoLadrillo.normal3,
+        TipoLadrillo.pwRosa,
+        TipoLadrillo.pwAzul,
+        TipoLadrillo.pwAmarillo,
+        TipoLadrillo.pwMorado,
+        TipoLadrillo.regenerador,
+        fantasmaColocado ? TipoLadrillo.normal3 : TipoLadrillo.fantasma,
+      ];
+      return pool[_rng.nextInt(pool.length)];
+  }
+}
+
+// ====================================================================
+//  CONDICIÓN DE VICTORIA
+// ====================================================================
+
 bool todosTroceados(List<ModeloLadrillo> ladrillos) =>
     ladrillos.every((l) => l.roto);
 
-// ------------------------------------------------------------------
-// comprobarColisionLadrillos
-// Itera la lista de ladrillos y comprueba si la pelota colisiona con
-// alguno. Si colisiona: marca el ladrillo como roto y llama a
-// [onColision] con la posición del ladrillo (para generar power-ups).
-// Retorna true si hubo al menos una colisión en este frame.
-// ------------------------------------------------------------------
-bool comprobarColisionLadrillos(
+// ====================================================================
+//  REGENERADOR — tick periódico
+// ====================================================================
+
+/// Llamar cada segundo (o en cada frame comprobando el timestamp).
+/// Repara los ladrillos regeneradores que llevan más de kRegenSeg sin golpe.
+void tickRegeneradores(List<ModeloLadrillo> ladrillos) {
+  final int ahora = DateTime.now().millisecondsSinceEpoch;
+  for (final l in ladrillos) {
+    if (l.tipo != TipoLadrillo.regenerador) continue;
+    if (l.roto) continue;
+    final int golpesMax = ModeloLadrillo.golpesIniciales(l.tipo);
+    if (l.golpesRestantes == golpesMax) continue; // ya está sano
+    if (l.ultimoGolpeMs == null) continue;
+    if (ahora - l.ultimoGolpeMs! >= kRegenSeg * 1000) {
+      l.regenerar();
+    }
+  }
+}
+
+// ====================================================================
+//  FANTASMA — tick de visibilidad
+// ====================================================================
+
+const int kFantasmaIntervaloMs = 1500; // alterna cada 1.5 s
+
+/// Actualiza la visibilidad del bloque fantasma en función del tiempo.
+void tickFantasma(List<ModeloLadrillo> ladrillos, int ahoraMs) {
+  for (final l in ladrillos) {
+    if (l.tipo != TipoLadrillo.fantasma || l.roto) continue;
+    final int ciclo = ahoraMs ~/ kFantasmaIntervaloMs;
+    l.visible = ciclo.isEven;
+  }
+}
+
+// ====================================================================
+//  COLISIONES
+// ====================================================================
+
+/// Procesa todas las colisiones de la pelota con los ladrillos en este frame.
+/// [bolaInvencible]: si true, cualquier ladrillo se rompe de 1 golpe.
+/// Devuelve una lista de ResultadoColision (uno por ladrillo golpeado).
+List<ResultadoColision> comprobarColisionLadrillos(
     ModeloPelota pelota,
     List<ModeloLadrillo> ladrillos, {
-      required void Function(double lx, double ly) onColision,
+      bool bolaInvencible = false,
     }) {
-  bool huboColision = false;
+  final List<ResultadoColision> resultados = [];
 
-  for (final ladrillo in ladrillos) {
-    if (ladrillo.roto) continue;
+  for (final l in ladrillos) {
+    if (l.roto) continue;
+    // Fantasmas invisibles no colisionan
+    if (l.tipo == TipoLadrillo.fantasma && !l.visible) continue;
 
-    final bool colision = pelota.x >= ladrillo.x &&
-        pelota.x <= ladrillo.x + anchoLadrillo &&
-        pelota.y <= ladrillo.y + altoLadrillo &&
-        pelota.y >= ladrillo.y - altoLadrillo;
+    final bool colision =
+        pelota.x >= l.x &&
+            pelota.x <= l.x + anchoLadrillo &&
+            pelota.y <= l.y + altoLadrillo &&
+            pelota.y >= l.y - altoLadrillo;
 
-    if (colision) {
-      ladrillo.roto = true;
-      _rebotar(pelota, ladrillo.x, ladrillo.y);
-      onColision(ladrillo.x, ladrillo.y);
-      huboColision = true;
+    if (!colision) continue;
+
+    // Rebote siempre al tocar
+    _rebotar(pelota, l.x, l.y);
+
+    // Daño
+    if (bolaInvencible) {
+      l.golpesRestantes = 0;
+    } else {
+      l.golpesRestantes--;
+      if (l.tipo == TipoLadrillo.regenerador) {
+        l.ultimoGolpeMs = DateTime.now().millisecondsSinceEpoch;
+      }
+    }
+
+    if (l.roto) {
+      resultados.add(ResultadoColision(
+        puntosGanados:          ModeloLadrillo.puntosPorTipo(l.tipo),
+        multiplicarPuntuacion:  l.tipo == TipoLadrillo.fantasma,
+        tipoPowerUpSoltado:     _powerUpDeTipo(l.tipo),
+        ladrilloX:              l.x,
+        ladrilloY:              l.y,
+      ));
+    } else {
+      // Golpe intermedio: rebotó pero no se rompió
+      resultados.add(ResultadoColision(
+        ladrilloX: l.x,
+        ladrilloY: l.y,
+      ));
     }
   }
 
-  return huboColision;
+  return resultados;
 }
 
-// ------------------------------------------------------------------
-// _rebotar (privado)
-// Calcula la distancia de la pelota a cada cara del ladrillo y
-// invierte la dirección correspondiente al lado más cercano.
-// ------------------------------------------------------------------
+// ── Power-up que suelta cada tipo al romperse ────────────────────────
+TipoPowerUp? _powerUpDeTipo(TipoLadrillo t) {
+  switch (t) {
+    case TipoLadrillo.pwRosa:     return TipoPowerUp.racketaGrande;
+    case TipoLadrillo.pwAzul:     return TipoPowerUp.tiempoLento;
+    case TipoLadrillo.pwAmarillo: return TipoPowerUp.vidaExtra;
+    case TipoLadrillo.pwMorado:   return TipoPowerUp.bolaInvencible;
+    default:                      return null;
+  }
+}
+
+// ── Rebote por lado más cercano ───────────────────────────────────────
 void _rebotar(ModeloPelota pelota, double lx, double ly) {
   final double distIzq    = (pelota.x - lx).abs();
   final double distDer    = (pelota.x - (lx + anchoLadrillo)).abs();
   final double distArriba = (pelota.y - ly).abs();
   final double distAbajo  = (pelota.y - (ly + altoLadrillo)).abs();
 
-  final double minDist = [distIzq, distDer, distArriba, distAbajo]
-      .reduce((a, b) => a < b ? a : b);
+  final double minDist =
+  [distIzq, distDer, distArriba, distAbajo].reduce((a, b) => a < b ? a : b);
 
   if (minDist == distIzq)         pelota.dirX = Direcciones.izquierda;
   else if (minDist == distDer)    pelota.dirX = Direcciones.derecha;

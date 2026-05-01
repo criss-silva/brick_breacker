@@ -1,10 +1,9 @@
 // ============================================================
 //  modelo_pelota.dart
-//  Representa el estado puro de la pelota: posición y dirección.
-//  No sabe nada de Flutter ni de widgets.
+//  Estado puro de la pelota: posición y dirección.
+//  No sabe nada de Flutter.
 // ============================================================
 
-// Direcciones posibles de la pelota
 enum Direcciones { arriba, abajo, izquierda, derecha }
 
 class ModeloPelota {
@@ -14,13 +13,12 @@ class ModeloPelota {
   Direcciones dirY;
 
   ModeloPelota({
-    this.x = 0,
-    this.y = 0,
+    this.x    = 0,
+    this.y    = 0,
     this.dirX = Direcciones.izquierda,
     this.dirY = Direcciones.abajo,
   });
 
-  // Devuelve una copia con el estado inicial (para resetear)
   void resetear() {
     x    = 0;
     y    = 0;

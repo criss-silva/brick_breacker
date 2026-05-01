@@ -1,48 +1,48 @@
 // ============================================================
 //  PaginaPrincipal.dart
-//  Orquestador principal del juego.
-//  SOLO coordina el estado y llama a los módulos de lógica.
-//  No contiene ninguna función de física ni de colisión inline.
+//  Orquestador principal. Solo gestiona estado y coordina módulos.
 //
-//  Módulos de modelos:
-//    modelo_pelota.dart   → ModeloPelota, Direcciones
-//    modelo_jugador.dart  → ModeloJugador
-//    modelo_ladrillo.dart → ModeloLadrillo
-//    modelos.dart         → ModeloPowerUp, TipoPowerUp
-//
-//  Módulos de lógica:
-//    logica_pelota.dart   → moverPelota, actualizarDireccion, pelotaFueraDePantalla
-//    logica_jugador.dart  → moverIzquierda, moverDerecha, moverConArrastre
-//    logica_ladrillos.dart→ generarLadrillos, comprobarColisionLadrillos, todosTroceados
-//    logica_powerups.dart → intentarGenerarPowerUp, moverPowerUps, comprobarRecogida
-//
-//  Módulos de vista:
-//    vista_pelota.dart    → VistaPelota
-//    vista_jugador.dart   → VistaJugador
-//    vista_ladrillo.dart  → VistaLadrillo
-//    Powerup.dart         → PowerUpWidget
-//    PaginaDeCubierta.dart→ Cubierta
-//    Pantallafinal.dart   → PantallaFinal
-//    PantallaVictoria.dart→ PantallaVictoria  ← NUEVO
+//  MAPA DE MÓDULOS:
+//  ┌──────────────────────┬──────────────────────────────────────┐
+//  │ Archivo              │ Responsabilidad                       │
+//  ├──────────────────────┼──────────────────────────────────────┤
+//  │ modelo_pelota        │ Posición y dirección de la pelota     │
+//  │ modelo_jugador       │ Posición y ancho de la raqueta        │
+//  │ modelo_ladrillo      │ Estado de cada ladrillo (tipo, vida)  │
+//  │ modelos              │ ModeloPowerUp y TipoPowerUp            │
+//  ├──────────────────────┼──────────────────────────────────────┤
+//  │ logica_pelota        │ Movimiento y rebote de bordes/raqueta │
+//  │ logica_jugador       │ Mover raqueta con teclado/arrastre    │
+//  │ logica_ladrillos     │ Generación, colisiones, regen, fantasma│
+//  │ logica_powerups      │ Spawn, caída y recogida de power-ups  │
+//  ├──────────────────────┼──────────────────────────────────────┤
+//  │ vista_pelota         │ Widget pelota                         │
+//  │ vista_jugador        │ Widget raqueta                        │
+//  │ vista_ladrillo       │ Widget ladrillo (color por tipo/vida) │
+//  │ Powerup              │ Widget power-up cayendo               │
+//  │ PaginaDeCubierta     │ Pantalla de inicio                    │
+//  │ Pantallafinal        │ HUD vidas+puntos / Game Over          │
+//  │ PantallaVictoria     │ Pantalla WIN                          │
+//  └──────────────────────┴──────────────────────────────────────┘
 // ============================================================
 
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ---- Modelos ----
+// ── Modelos ──────────────────────────────────────────────────────────
 import 'package:moviles/ModeloPelota.dart';
 import 'package:moviles/ModeloJugador.dart';
 import 'package:moviles/ModeloLadrillo.dart';
 import 'package:moviles/modelos.dart';
 
-// ---- Lógica ----
+// ── Lógica ───────────────────────────────────────────────────────────
 import 'package:moviles/LogicaPelota.dart';
 import 'package:moviles/LogicaJugador.dart';
 import 'package:moviles/LogicaLadrillos.dart';
 import 'package:moviles/LogicaPowerups.dart';
 
-// ---- Vistas ----
+// ── Vistas ───────────────────────────────────────────────────────────
 import 'package:moviles/VistaPelota.dart';
 import 'package:moviles/VistaJugador.dart';
 import 'package:moviles/VistaLadrillo.dart';
@@ -52,8 +52,6 @@ import 'package:moviles/Pantallafinal.dart';
 import 'package:moviles/PantallaVictoria.dart';
 
 // ============================================================
-//  PaginaPrincipal (StatefulWidget)
-// ============================================================
 class PaginaPrincipal extends StatefulWidget {
   const PaginaPrincipal({Key? key}) : super(key: key);
 
@@ -61,45 +59,42 @@ class PaginaPrincipal extends StatefulWidget {
   State<PaginaPrincipal> createState() => _PaginaPrincipalState();
 }
 
-// ============================================================
-//  _PaginaPrincipalState
-//  Solo mantiene el estado y delega la lógica a los módulos.
-// ============================================================
 class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
-  // ----------------------------------------------------------------
-  //  CONSTANTES DEL JUEGO
-  // ----------------------------------------------------------------
-  static const int    _vidasIniciales   = 3;
-  static const int    _vidasMaximas     = 5;
-  static const int    _duracionEfectoMs = 7000; // 7 s
+  // ── Constantes ──────────────────────────────────────────────────
+  static const int _vidasIniciales       = 3;
+  static const int _vidasMaximas         = 5;
+  static const int _duracionEfectoMs     = 7000; // 7 s (raqueta, lento)
+  static const int _duracionInvencibleMs = 5000; // 5 s (bola invencible)
 
-  // ----------------------------------------------------------------
-  //  MODELOS DE ESTADO
-  // ----------------------------------------------------------------
-  late ModeloPelota   _pelota;
-  late ModeloJugador  _jugador;
+  // ── Modelos de estado ───────────────────────────────────────────
+  late ModeloPelota         _pelota;
+  late ModeloJugador        _jugador;
   late List<ModeloLadrillo> _ladrillos;
 
-  // ----------------------------------------------------------------
-  //  ESTADO GENERAL DEL JUEGO
-  // ----------------------------------------------------------------
+  // ── Estado general ──────────────────────────────────────────────
   bool _juegoEmpezado = false;
   bool _juegoAcabado  = false;
-  bool _juegoGanado   = false;   // ← NUEVO: condición de victoria
+  bool _juegoGanado   = false;
   int  _vidas         = _vidasIniciales;
 
-  // ----------------------------------------------------------------
-  //  POWER-UPS EN PANTALLA
-  // ----------------------------------------------------------------
+  // ── Puntuación ──────────────────────────────────────────────────
+  int  _puntuacion        = 0;
+  bool _multiplicadorx2   = false; // activado al romper el fantasma
+
+  // ── Power-ups en pantalla ───────────────────────────────────────
   final List<ModeloPowerUp> _powerUpsActivos = [];
 
-  // ----------------------------------------------------------------
-  //  TIMERS
-  // ----------------------------------------------------------------
+  // ── Timers ──────────────────────────────────────────────────────
   Timer? _timerPrincipal;
   Timer? _timerEfectoRaqueta;
   Timer? _timerEfectoLento;
+  Timer? _timerBolaInvencible;
+  Timer? _timerRegeneradores; // tick cada 1 s para regeneradores
+  Timer? _timerFantasma;      // tick para actualizar visibilidad
+
+  // ── Flags de efectos activos ────────────────────────────────────
+  bool _bolaInvencible = false;
 
   // ================================================================
   //  INICIALIZACIÓN
@@ -118,43 +113,89 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
   }
 
   // ================================================================
-  //  BUCLE PRINCIPAL DEL JUEGO
+  //  BUCLE PRINCIPAL
   // ================================================================
 
   void _empezarJuego() {
     if (_juegoEmpezado) return;
     setState(() => _juegoEmpezado = true);
 
+    // Timer de regeneradores: comprueba cada segundo
+    _timerRegeneradores = Timer.periodic(const Duration(seconds: 1), (_) {
+      tickRegeneradores(_ladrillos);
+    });
+
+    // Timer principal: 10 ms = ~100 fps de lógica
     _timerPrincipal = Timer.periodic(const Duration(milliseconds: 10), (timer) {
-      // 1. Actualizar dirección (bordes + raqueta)
+      // 1. Dirección pelota (bordes + raqueta)
       actualizarDireccion(_pelota, _jugador);
 
       // 2. Mover pelota
       final bool lento = _timerEfectoLento != null;
-      setState(() => moverPelota(_pelota, tiempoLento: lento));
+      setState(() {
+        moverPelota(_pelota, tiempoLento: lento);
+      });
 
       // 3. Mover power-ups
       setState(() => moverPowerUps(_powerUpsActivos));
 
-      // 4. Colisiones con ladrillos
-      setState(() {
-        comprobarColisionLadrillos(
-          _pelota,
-          _ladrillos,
-          onColision: (lx, ly) => intentarGenerarPowerUp(
-            _powerUpsActivos, lx, ly, anchoLadrillo,
-          ),
-        );
-      });
+      // 4. Fantasma: actualizar visibilidad cada frame
+      final int ahora = DateTime.now().millisecondsSinceEpoch;
+      setState(() => tickFantasma(_ladrillos, ahora));
 
-      // 5. Comprobar victoria (todos los ladrillos rotos)
+      // 5. Colisiones con ladrillos
+      final List<ResultadoColision> colisiones = comprobarColisionLadrillos(
+        _pelota,
+        _ladrillos,
+        bolaInvencible: _bolaInvencible,
+      );
+
+      if (colisiones.isNotEmpty) {
+        setState(() {
+          for (final col in colisiones) {
+            // Sumar puntos (con multiplicador si corresponde)
+            if (col.puntosGanados > 0) {
+              int pts = col.puntosGanados;
+              if (_multiplicadorx2) pts *= 2;
+              if (col.multiplicarPuntuacion) {
+                // El propio bloque fantasma activa el x2 Y da puntos x2
+                pts *= 2;
+                _multiplicadorx2 = true;
+              }
+              _puntuacion += pts;
+            }
+
+            // Spawnear power-up fijo si el ladrillo tiene uno asignado
+            if (col.tipoPowerUpSoltado != null) {
+              spawnPowerUpFijo(
+                _powerUpsActivos,
+                col.tipoPowerUpSoltado!,
+                col.ladrilloX,
+                col.ladrilloY,
+                anchoLadrillo,
+              );
+            } else if (col.puntosGanados > 0) {
+              // Ladrillo normal roto: intentar soltar pw aleatorio
+              intentarGenerarPowerUpAleatorio(
+                _powerUpsActivos,
+                col.ladrilloX,
+                col.ladrilloY,
+                anchoLadrillo,
+              );
+            }
+          }
+        });
+      }
+
+      // 6. Victoria
       if (todosTroceados(_ladrillos)) {
         timer.cancel();
+        _timerRegeneradores?.cancel();
         setState(() => _juegoGanado = true);
         return;
       }
 
-      // 6. Recoger power-ups
+      // 7. Recoger power-ups
       final List<ModeloPowerUp> recogidos =
       comprobarRecogida(_powerUpsActivos, _jugador);
       if (recogidos.isNotEmpty) {
@@ -165,9 +206,10 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
         });
       }
 
-      // 7. Comprobar muerte
+      // 8. Muerte
       if (pelotaFueraDePantalla(_pelota)) {
         timer.cancel();
+        _timerRegeneradores?.cancel();
         _perderVida();
       }
     });
@@ -175,26 +217,26 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   // ================================================================
   //  EFECTOS DE POWER-UPS
-  //  Esta lógica permanece aquí porque necesita setState y Timers.
+  //  Aquí porque necesitan setState y Timer.
   // ================================================================
 
   void _aplicarEfectoPowerUp(TipoPowerUp tipo) {
     switch (tipo) {
 
-    // ---- Rosa: raqueta grande ----
+    // ── Rosa: raqueta grande ─────────────────────────────────────
       case TipoPowerUp.racketaGrande:
         _timerEfectoRaqueta?.cancel();
         _jugador.ancho = ModeloJugador.anchoGrande;
         _timerEfectoRaqueta = Timer(
           const Duration(milliseconds: _duracionEfectoMs),
               () => setState(() {
-            _jugador.ancho        = ModeloJugador.anchoNormal;
-            _timerEfectoRaqueta   = null;
+            _jugador.ancho      = ModeloJugador.anchoNormal;
+            _timerEfectoRaqueta = null;
           }),
         );
         break;
 
-    // ---- Azul: tiempo lento ----
+    // ── Azul: tiempo lento ───────────────────────────────────────
       case TipoPowerUp.tiempoLento:
         _timerEfectoLento?.cancel();
         _timerEfectoLento = Timer(
@@ -203,19 +245,34 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
         );
         break;
 
-    // ---- Amarillo: vida extra ----
+    // ── Amarillo: vida extra ─────────────────────────────────────
       case TipoPowerUp.vidaExtra:
-        if (_vidas < _vidasMaximas) _vidas++;
+        if (_vidas < _vidasMaximas) {
+          setState(() => _vidas++);
+        }
+        break;
+
+    // ── Morado: bola invencible ──────────────────────────────────
+      case TipoPowerUp.bolaInvencible:
+        _timerBolaInvencible?.cancel();
+        _bolaInvencible = true;
+        _timerBolaInvencible = Timer(
+          const Duration(milliseconds: _duracionInvencibleMs),
+              () => setState(() {
+            _bolaInvencible      = false;
+            _timerBolaInvencible = null;
+          }),
+        );
         break;
     }
   }
 
   void _cancelarEfectosTemporales() {
-    _timerEfectoRaqueta?.cancel();
-    _timerEfectoRaqueta = null;
-    _timerEfectoLento?.cancel();
-    _timerEfectoLento = null;
-    _jugador.ancho = ModeloJugador.anchoNormal;
+    _timerEfectoRaqueta?.cancel();  _timerEfectoRaqueta  = null;
+    _timerEfectoLento?.cancel();    _timerEfectoLento    = null;
+    _timerBolaInvencible?.cancel(); _timerBolaInvencible = null;
+    _jugador.ancho  = ModeloJugador.anchoNormal;
+    _bolaInvencible = false;
   }
 
   // ================================================================
@@ -244,32 +301,38 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
 
   void _reiniciar() {
     _timerPrincipal?.cancel();
+    _timerRegeneradores?.cancel();
+    _timerFantasma?.cancel();
     _cancelarEfectosTemporales();
     setState(() {
-      _pelota        = ModeloPelota();
-      _jugador       = ModeloJugador();
-      _ladrillos     = generarLadrillos();
-      _juegoEmpezado = false;
-      _juegoAcabado  = false;
-      _juegoGanado   = false;
-      _vidas         = _vidasIniciales;
+      _pelota          = ModeloPelota();
+      _jugador         = ModeloJugador();
+      _ladrillos       = generarLadrillos();
+      _juegoEmpezado   = false;
+      _juegoAcabado    = false;
+      _juegoGanado     = false;
+      _vidas           = _vidasIniciales;
+      _puntuacion      = 0;
+      _multiplicadorx2 = false;
       _powerUpsActivos.clear();
     });
   }
 
   // ================================================================
-  //  LIMPIEZA
+  //  DISPOSE
   // ================================================================
 
   @override
   void dispose() {
     _timerPrincipal?.cancel();
+    _timerRegeneradores?.cancel();
+    _timerFantasma?.cancel();
     _cancelarEfectosTemporales();
     super.dispose();
   }
 
   // ================================================================
-  //  BUILD: solo composición de widgets
+  //  BUILD
   // ================================================================
 
   @override
@@ -299,38 +362,45 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
             child: Stack(
               children: [
 
-                // ---- 1. Pantalla de inicio ----
+                // ── 1. Pantalla de inicio ──────────────────────────
                 Cubierta(juegoEmpezado: _juegoEmpezado),
 
-                // ---- 2. HUD de vidas / Game Over ----
+                // ── 2. HUD vidas+puntos / Game Over ───────────────
                 PantallaFinal(
                   juegoAcabado: _juegoAcabado,
-                  function: _reiniciar,
-                  vidas: _vidas,
+                  function:     _reiniciar,
+                  vidas:        _vidas,
+                  puntuacion:   _puntuacion,
                 ),
 
-                // ---- 3. Pantalla de VICTORIA ----
+                // ── 3. Pantalla de VICTORIA ────────────────────────
                 PantallaVictoria(
                   juegoGanado: _juegoGanado,
                   onReiniciar: _reiniciar,
+                  puntuacion:  _puntuacion,
                 ),
 
-                // ---- 4. Pelota ----
-                VistaPelota(posX: _pelota.x, posY: _pelota.y),
+                // ── 4. Pelota (color especial si invencible) ───────
+                VistaPelota(
+                  posX:       _pelota.x,
+                  posY:       _pelota.y,
+                  invencible: _bolaInvencible,
+                ),
 
-                // ---- 5. Raqueta ----
-                VistaJugador(posX: _jugador.x, jugadorWidth: _jugador.ancho),
+                // ── 5. Raqueta ─────────────────────────────────────
+                VistaJugador(
+                  posX:          _jugador.x,
+                  jugadorWidth:  _jugador.ancho,
+                ),
 
-                // ---- 6. Ladrillos ----
+                // ── 6. Ladrillos ───────────────────────────────────
                 ..._ladrillos.map((l) => VistaLadrillo(
-                  ladrilloX:     l.x,
-                  ladrilloY:     l.y,
-                  ladrilloAlto:  altoLadrillo,
-                  ladrilloAncho: anchoLadrillo,
-                  ladrilloRoto:  l.roto,
+                  ladrillo: l,
+                  ancho:    anchoLadrillo,
+                  alto:     altoLadrillo,
                 )),
 
-                // ---- 7. Power-ups cayendo ----
+                // ── 7. Power-ups cayendo ───────────────────────────
                 ..._powerUpsActivos.map((pu) => PowerUpWidget(
                   posX: pu.x,
                   posY: pu.y,

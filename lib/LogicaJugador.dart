@@ -1,17 +1,12 @@
 // ============================================================
 //  logica_jugador.dart
-//  Funciones puras para mover la raqueta y gestionar su estado.
-//  No importa Flutter. Opera sobre ModeloJugador.
+//  Movimiento de la raqueta. No importa Flutter.
 // ============================================================
 
 import 'ModeloJugador.dart';
 
-const double _paso = 0.2; // Cuánto se mueve la raqueta con las flechas
+const double _paso = 0.2;
 
-// ------------------------------------------------------------------
-// moverIzquierda / moverDerecha
-// Mueve la raqueta respetando los límites de pantalla.
-// ------------------------------------------------------------------
 void moverIzquierda(ModeloJugador jugador) {
   if (jugador.x > -1) jugador.x -= _paso;
 }
@@ -20,12 +15,6 @@ void moverDerecha(ModeloJugador jugador) {
   if (jugador.x + jugador.ancho < 1) jugador.x += _paso;
 }
 
-// ------------------------------------------------------------------
-// moverConArrastre
-// Traduce píxeles de arrastre táctil a unidades Alignment y mueve
-// la raqueta sin que salga de los bordes.
-// [anchoPantalla] es MediaQuery.of(context).size.width.
-// ------------------------------------------------------------------
 void moverConArrastre(ModeloJugador jugador, double deltaPx, double anchoPantalla) {
   final double delta = deltaPx / (anchoPantalla / 2);
   final double nuevo = jugador.x + delta;

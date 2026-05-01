@@ -1,7 +1,6 @@
 // ============================================================
 //  vista_jugador.dart
 //  Widget visual de la raqueta. Solo sabe dibujarse.
-//  Recibe posición (posX) y ancho en unidades Alignment.
 // ============================================================
 
 import 'package:flutter/material.dart';
