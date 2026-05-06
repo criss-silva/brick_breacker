@@ -8,16 +8,18 @@
 //  ├──────────────┼────────┼─────────────────────────────────────┤
 //  │ normal1      │   1    │ Ladrillo básico fila 1               │
 //  │ normal2      │   2    │ Cambia de color con cada golpe       │
-//  │ normal3      │   3    │ Cambia de color con cada golpe       │
-//  │ pwRosa       │   2    │ Suelta power-up raqueta grande       │
-//  │ pwAzul       │   2    │ Suelta power-up tiempo lento         │
-//  │ pwAmarillo   │   2    │ Suelta power-up vida extra           │
-//  │ pwMorado     │   1    │ Suelta power-up bola invencible      │
-//  │ regenerador  │   1    │ Se regenera si no recibe golpe       │
-//  │              │        │ en kRegenSeg segundos                │
-//  │ fantasma     │   2    │ Aparece y desaparece cada ciclo.     │
+//  │ normal3     │   3    │ Cambia de color con cada golpe       │
+//  │ pwRosa      │   2    │ Suelta power-up raqueta grande       │
+//  │ pwAzul      │   2    │ Suelta power-up tiempo lento         │
+//  │ pwAmarillo  │   2    │ Suelta power-up vida extra           │
+//  │ pwMorado    │   1    │ Suelta power-up bola invencible    │
+//  │ regenerador │   1    │ Se regenera si no recibe golpe       │
+//  │              │        │ en kRegenSeg segundos            │
+//  │ fantasma   │   2    │ Aparece y desaparece cada ciclo.     │
 //  │              │        │ Si se rompe dobla la puntuación.     │
-//  │              │        │ Solo puede existir uno por partida.  │
+//  │              │        │ Solo puede existir uno por partida. │
+//  │ special    │  10    │ Solo se rompe con bolaInvencible
+//                                  o con 10 golpes    │
 //  └──────────────┴────────┴─────────────────────────────────────┘
 // ============================================================
 
@@ -27,10 +29,11 @@ enum TipoLadrillo {
   normal3,       // 3 golpes
   pwRosa,        // 2 golpes → suelta raquetaGrande
   pwAzul,        // 2 golpes → suelta tiempoLento
-  pwAmarillo,    // 2 golpes → suelta vidaExtra
-  pwMorado,      // 1 golpe  → suelta bolaInvencible
+  pwAmarillo,     // 2 golpes → suelta vidaExtra
+  pwMorado,       // 1 golpe  → suelta bolaInvencible
   regenerador,   // 1 golpe  → se repara si no recibe daño en kRegenSeg s
-  fantasma,      // 2 golpes → aparece/desaparece, x2 puntos al romperlo
+  fantasma,     // 2 golpes → aparece/desaparece, x2 puntos al romperlo
+  special,      // 10 golpes → solo se rompe con bolaInvencible
 }
 
 /// Segundos sin golpe para que el bloque regenerador se repare
@@ -77,6 +80,7 @@ class ModeloLadrillo {
       case TipoLadrillo.pwMorado:    return 1;
       case TipoLadrillo.regenerador: return 1;
       case TipoLadrillo.fantasma:    return 2;
+      case TipoLadrillo.special:    return 10;
     }
   }
 
@@ -91,7 +95,8 @@ class ModeloLadrillo {
       case TipoLadrillo.pwAmarillo:  return 25;
       case TipoLadrillo.pwMorado:    return 40;
       case TipoLadrillo.regenerador: return 15;
-      case TipoLadrillo.fantasma:    return 50; // ×2 en logica si se rompe
+      case TipoLadrillo.fantasma:    return 50;
+      case TipoLadrillo.special:    return 100;
     }
   }
 

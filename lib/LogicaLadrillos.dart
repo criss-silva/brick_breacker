@@ -33,7 +33,7 @@ const double anchoLadrillo     = 0.26;
 const double altoLadrillo      = 0.06;
 const double espacioHorizontal = 0.02;
 const double espacioVertical   = 0.04;
-const double primerLadrilloY   = -0.95; // Y de la fila más alta (techo)
+const double primerLadrilloY   = -0.85; // Y de la fila más alta (más abajo)
 const double _margenLateral    = 0.02;
 
 // X de inicio para centrar todas las columnas
@@ -113,43 +113,39 @@ TipoLadrillo _elegirTipo(int fila, bool fantasmaColocado) {
   final double r = _rng.nextDouble();
 
   switch (fila) {
-  // ── Fila 1: solo normal1 ──────────────────────────────────────
+  // fila 1
     case 0:
+      if (r < 0.15) return TipoLadrillo.special;
+      if (r < 0.30) return TipoLadrillo.pwMorado;
+      if (r < 0.45) return TipoLadrillo.pwRosa;
+      if (r < 0.60) return TipoLadrillo.pwAzul;
+      if (r < 0.75) return TipoLadrillo.pwAmarillo;
       return TipoLadrillo.normal1;
 
-  // ── Fila 2 ───────────────────────────────────────────────────
+  // fila 2
     case 1:
-      if (r < 0.02) return TipoLadrillo.pwMorado;
-      if (r < 0.07) return TipoLadrillo.pwAmarillo;
-      if (r < 0.17) return TipoLadrillo.pwAzul;
-      if (r < 0.27) return TipoLadrillo.pwRosa;
-      if (r < 0.47) return TipoLadrillo.normal2;
-      return TipoLadrillo.normal1;
+      if (r < 0.10) return TipoLadrillo.special;
+      if (r < 0.25) return TipoLadrillo.pwMorado;
+      if (r < 0.40) return TipoLadrillo.regenerador;
+      if (r < 0.55) return TipoLadrillo.pwRosa;
+      if (r < 0.70) return TipoLadrillo.pwAzul;
+      return TipoLadrillo.normal3;
 
-  // ── Fila 3 ───────────────────────────────────────────────────
+  // fila 3
     case 2:
-      if (!fantasmaColocado && r < 0.01) return TipoLadrillo.fantasma;
-      if (r < 0.04) return TipoLadrillo.pwMorado;
-      if (r < 0.09) return TipoLadrillo.regenerador;
-      if (r < 0.17) return TipoLadrillo.pwAmarillo;
-      if (r < 0.29) return TipoLadrillo.pwAzul;
-      if (r < 0.41) return TipoLadrillo.pwRosa;
-      if (r < 0.56) return TipoLadrillo.normal3;
+      if (!fantasmaColocado && r < 0.05) return TipoLadrillo.fantasma;
+      if (r < 0.20) return TipoLadrillo.normal3;
+      if (r < 0.40) return TipoLadrillo.pwAmarillo;
+      if (r < 0.60) return TipoLadrillo.pwAzul;
       return TipoLadrillo.normal2;
 
-  // ── Fila 4: equiprobable, todos con ≥3 golpes ────────────────
+  //fila 4
     case 3:
     default:
-      final List<TipoLadrillo> pool = [
-        TipoLadrillo.normal3,
-        TipoLadrillo.pwRosa,
-        TipoLadrillo.pwAzul,
-        TipoLadrillo.pwAmarillo,
-        TipoLadrillo.pwMorado,
-        TipoLadrillo.regenerador,
-        fantasmaColocado ? TipoLadrillo.normal3 : TipoLadrillo.fantasma,
-      ];
-      return pool[_rng.nextInt(pool.length)];
+      if (r<0.3) return TipoLadrillo.normal3;
+      if (r<0.5) return TipoLadrillo.normal2;
+      if (r < 0.80) return TipoLadrillo.normal1;
+      return TipoLadrillo.normal1;
   }
 }
 
@@ -213,12 +209,12 @@ List<ResultadoColision> comprobarColisionLadrillos(
     if (l.roto) continue;
     // Fantasmas invisibles no colisionan
     if (l.tipo == TipoLadrillo.fantasma && !l.visible) continue;
-
+    final double margen = (l.tipo == TipoLadrillo.normal1) ? 0.01 : 0.005;
     final bool colision =
-        pelota.x >= l.x &&
-            pelota.x <= l.x + anchoLadrillo &&
-            pelota.y <= l.y + altoLadrillo &&
-            pelota.y >= l.y - altoLadrillo;
+        pelota.x + margen >= l.x &&
+            pelota.x - margen <= l.x + anchoLadrillo &&
+            pelota.y + margen <= l.y + altoLadrillo &&
+            pelota.y - margen >= l.y - altoLadrillo;
 
     if (!colision) continue;
 
@@ -226,20 +222,28 @@ List<ResultadoColision> comprobarColisionLadrillos(
     _rebotar(pelota, l.x, l.y);
 
     // Daño
-    if (bolaInvencible) {
-      l.golpesRestantes = 0;
-    } else {
+    bool roto = bolaInvencible;
+    if (!roto) {
       l.golpesRestantes--;
       if (l.tipo == TipoLadrillo.regenerador) {
         l.ultimoGolpeMs = DateTime.now().millisecondsSinceEpoch;
       }
+      if (l.tipo == TipoLadrillo.normal1 || l.golpesRestantes <= 0) {
+        roto = true;
+        if (l.tipo == TipoLadrillo.normal1) l.golpesRestantes = 0;
+      }
     }
 
     if (l.roto) {
+      // Solo soltar power-up si no es normal1
+      TipoPowerUp? powerUpSoltado = null;
+      if (l.tipo != TipoLadrillo.normal1) {
+        powerUpSoltado = _powerUpDeTipo(l.tipo);
+      }
       resultados.add(ResultadoColision(
         puntosGanados:          ModeloLadrillo.puntosPorTipo(l.tipo),
         multiplicarPuntuacion:  l.tipo == TipoLadrillo.fantasma,
-        tipoPowerUpSoltado:     _powerUpDeTipo(l.tipo),
+        tipoPowerUpSoltado:     powerUpSoltado,
         ladrilloX:              l.x,
         ladrilloY:              l.y,
       ));

@@ -120,6 +120,10 @@ class VistaLadrillo extends StatelessWidget {
         return g == 2
             ? const Color(0xFFE0E0E0)   // casi blanco
             : const Color(0xFF9E9E9E);  // gris (ya recibió 1 golpe)
+
+    // ── Special: dorado (solo se rompe con bolaInvencible) ─────────
+      case TipoLadrillo.special:
+        return const Color(0xFFFFD700); // dorado
     }
   }
 

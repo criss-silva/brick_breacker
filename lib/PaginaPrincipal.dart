@@ -51,6 +51,9 @@ import 'package:moviles/PaginaDeCubierta.dart';
 import 'package:moviles/Pantallafinal.dart';
 import 'package:moviles/PantallaVictoria.dart';
 
+// ── Estado ──────────────────────────────────────────────────────────
+import 'package:moviles/game_state.dart';
+
 // ============================================================
 class PaginaPrincipal extends StatefulWidget {
   const PaginaPrincipal({Key? key}) : super(key: key);
@@ -110,6 +113,19 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
     _pelota    = ModeloPelota();
     _jugador   = ModeloJugador();
     _ladrillos = generarLadrillos();
+  }
+
+  // ================================================================
+  //  PEDIR NOMBRE ANTES DE JUGAR
+  // ================================================================
+
+  Future<void> _pedirNombreYEmpezar() async {
+    if (_juegoEmpezado) return;
+    if (GameState.currentPlayerName.isNotEmpty) {
+      _empezarJuego();
+      return;
+    }
+    _empezarJuego();
   }
 
   // ================================================================
@@ -348,7 +364,7 @@ class _PaginaPrincipalState extends State<PaginaPrincipal> {
         }
       },
       child: GestureDetector(
-        onTap: _empezarJuego,
+        onTap: _pedirNombreYEmpezar,
         onHorizontalDragUpdate: (details) {
           setState(() => moverConArrastre(
             _jugador,
