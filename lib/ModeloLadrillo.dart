@@ -1,27 +1,5 @@
-// ============================================================
 //  modelo_ladrillo.dart
 //  Estado puro de un ladrillo. No importa Flutter.
-//
-//  TIPOS DE LADRILLO:
-//  ┌──────────────┬────────┬─────────────────────────────────────┐
-//  │ TipoLadrillo │ Golpes │ Comportamiento especial              │
-//  ├──────────────┼────────┼─────────────────────────────────────┤
-//  │ normal1      │   1    │ Ladrillo básico fila 1               │
-//  │ normal2      │   2    │ Cambia de color con cada golpe       │
-//  │ normal3     │   3    │ Cambia de color con cada golpe       │
-//  │ pwRosa      │   2    │ Suelta power-up raqueta grande       │
-//  │ pwAzul      │   2    │ Suelta power-up tiempo lento         │
-//  │ pwAmarillo  │   2    │ Suelta power-up vida extra           │
-//  │ pwMorado    │   1    │ Suelta power-up bola invencible    │
-//  │ regenerador │   1    │ Se regenera si no recibe golpe       │
-//  │              │        │ en kRegenSeg segundos            │
-//  │ fantasma   │   2    │ Aparece y desaparece cada ciclo.     │
-//  │              │        │ Si se rompe dobla la puntuación.     │
-//  │              │        │ Solo puede existir uno por partida. │
-//  │ special    │  10    │ Solo se rompe con bolaInvencible
-//                                  o con 10 golpes    │
-//  └──────────────┴────────┴─────────────────────────────────────┘
-// ============================================================
 
 enum TipoLadrillo {
   normal1,       // 1 golpe
@@ -59,7 +37,7 @@ class ModeloLadrillo {
   // Si el bloque fantasma está visible en este momento
   bool visible;
 
-  ModeloLadrillo({
+  ModeloLadrillo({ //constructor del ladrillo en sí
     required this.x,
     required this.y,
     required this.tipo,
@@ -68,7 +46,7 @@ class ModeloLadrillo {
     this.visible = true,
   });
 
-  // ── Golpes iniciales según tipo ─────────────────────────────────
+  // Golpes iniciales según tipo
   static int golpesIniciales(TipoLadrillo t) {
     switch (t) {
       case TipoLadrillo.normal1:     return 1;
@@ -84,7 +62,7 @@ class ModeloLadrillo {
     }
   }
 
-  // ── Puntos base al romper ────────────────────────────────────────
+  // Puntos base al romper
   static int puntosPorTipo(TipoLadrillo t) {
     switch (t) {
       case TipoLadrillo.normal1:     return 10;
@@ -100,7 +78,7 @@ class ModeloLadrillo {
     }
   }
 
-  // ── Reparar el ladrillo al estado inicial ─────────────────────────
+  //Reparar el ladrillo al estado inicial
   void regenerar() {
     golpesRestantes = golpesIniciales(tipo);
     ultimoGolpeMs   = null;

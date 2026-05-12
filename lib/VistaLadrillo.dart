@@ -1,16 +1,14 @@
-// ============================================================
 //  vista_ladrillo.dart
 //  Widget visual de un ladrillo. Solo sabe dibujarse.
 //
-//  PALETA DE COLORES:
+//  CODIFICCACION COLORES:
 //  Cada TipoLadrillo tiene hasta 3 tonos (oscureciendo con cada golpe).
 //  El fantasma tiene un borde punteado y es semi-transparente.
-// ============================================================
 
 import 'package:flutter/material.dart';
 import 'ModeloLadrillo.dart';
 
-class VistaLadrillo extends StatelessWidget {
+class VistaLadrillo extends StatelessWidget { //clase que define la vista del ladrillo en sí
   final ModeloLadrillo ladrillo;
   final double ancho;
   final double alto;
@@ -24,7 +22,7 @@ class VistaLadrillo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ladrillos rotos o fantasmas invisibles no se dibujan
+    // Ladrillos rotos o de tipo invisible no se dibujan
     if (ladrillo.roto) return const SizedBox.shrink();
     if (ladrillo.tipo == TipoLadrillo.fantasma && !ladrillo.visible) {
       return const SizedBox.shrink();
@@ -65,14 +63,14 @@ class VistaLadrillo extends StatelessWidget {
     );
   }
 
-  // ── Color según tipo y golpes restantes ─────────────────────────
+  // Color según tipo y golpes restantes
   Color _colorActual() {
     final int g = ladrillo.golpesRestantes;
     final int gMax = ModeloLadrillo.golpesIniciales(ladrillo.tipo);
 
     switch (ladrillo.tipo) {
 
-    // ── Normales: gris claro → gris medio → gris oscuro ─────────
+    //Normales: gris claro → gris medio → gris oscuro
       case TipoLadrillo.normal1:
         return const Color(0xFFB0BEC5); // azul-gris claro
 
@@ -86,48 +84,48 @@ class VistaLadrillo extends StatelessWidget {
         if (g == 2) return const Color(0xFF37474F);   // intermedio
         return       const Color(0xFF1C313A);          // más oscuro (1 golpe)
 
-    // ── Power-up rosa (raqueta grande): tonos rosa ───────────────
+    //  Power-up rosa (raqueta grande): tonos rosa
       case TipoLadrillo.pwRosa:
         return g == 2
             ? const Color(0xFFF48FB1)   // rosa claro
             : const Color(0xFFAD1457);  // rosa oscuro
 
-    // ── Power-up azul (tiempo lento): tonos azul ────────────────
+    //Power-up azul (tiempo lento): tonos azul
       case TipoLadrillo.pwAzul:
         return g == 2
             ? const Color(0xFF81D4FA)   // azul claro
             : const Color(0xFF01579B);  // azul oscuro
 
-    // ── Power-up amarillo (vida extra): tonos amarillo ───────────
+    //Power-up amarillo (vida extra): tonos amarillo
       case TipoLadrillo.pwAmarillo:
         return g == 2
             ? const Color(0xFFFFF176)   // amarillo claro
             : const Color(0xFFF57F17);  // amarillo oscuro
 
-    // ── Power-up morado (bola invencible): tonos morado ──────────
+    // Power-up morado (bola invencible): tonos morado
       case TipoLadrillo.pwMorado:
         return const Color(0xFFCE93D8); // morado claro (1 solo golpe)
 
-    // ── Regenerador: tonos verde ─────────────────────────────────
+    // Regenerador: tonos verde
       case TipoLadrillo.regenerador:
       // Si está dañado (golpesRestantes < max) tira a verde oscuro
         return (g == gMax)
             ? const Color(0xFFA5D6A7)   // verde claro (sano)
             : const Color(0xFF2E7D32);  // verde oscuro (dañado)
 
-    // ── Fantasma: blanco semi-translúcido ────────────────────────
+    //Fantasma: blanco semi-translúcido
       case TipoLadrillo.fantasma:
         return g == 2
             ? const Color(0xFFE0E0E0)   // casi blanco
             : const Color(0xFF9E9E9E);  // gris (ya recibió 1 golpe)
 
-    // ── Special: dorado (solo se rompe con bolaInvencible) ─────────
+    // Special: dorado (solo se rompe con bolaInvencible)
       case TipoLadrillo.special:
         return const Color(0xFFFFD700); // dorado
     }
   }
 
-  // ── Puntos indicadores de vida (1 punto por golpe restante) ─────
+  // Puntos indicadores de vida (1 punto por golpe restante)
   Widget _indicadorVida() {
     final int g    = ladrillo.golpesRestantes;
     final int gMax = ModeloLadrillo.golpesIniciales(ladrillo.tipo);

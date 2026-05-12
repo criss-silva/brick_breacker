@@ -1,39 +1,46 @@
-// ============================================================
-//  logica_pelota.dart
+//  LogicaPelota.dart
 //  Movimiento y colisión de bordes/raqueta de la pelota.
 //  No importa Flutter.
-// ============================================================
 
 import 'ModeloPelota.dart';
 import 'ModeloJugador.dart';
 
-const double velocidadBaseX  = 0.01;
-const double velocidadBaseY  = 0.01;
-const double velocidadLentaX = 0.005;
-const double velocidadLentaY = 0.005;
+// Factor reductor cuando el power-up tiempoLento está activo
+const double _factorLento = 0.5;
 
 void moverPelota(ModeloPelota pelota, {bool tiempoLento = false}) {
-  final double velX = tiempoLento ? velocidadLentaX : velocidadBaseX;
-  final double velY = tiempoLento ? velocidadLentaY : velocidadBaseY;
+  final double factor = tiempoLento ? _factorLento : 1.0;
+  final double velX   = pelota.velocidadX * factor;
+  final double velY   = pelota.velocidadY * factor;
 
   pelota.y += pelota.dirY == Direcciones.abajo   ?  velY : -velY;
   pelota.x += pelota.dirX == Direcciones.derecha ?  velX : -velX;
 }
 
 void actualizarDireccion(ModeloPelota pelota, ModeloJugador jugador) {
-  // Techo
-  if (pelota.y <= -1) pelota.dirY = Direcciones.abajo;
+  // Techo → rebote + acelerar
+  if (pelota.y <= -1) {
+    pelota.dirY = Direcciones.abajo;
+    pelota.acelerar();
+  }
 
-  // Raqueta
+  // Raqueta → rebote + acelerar
   if (pelota.y >= 0.9 &&
       pelota.x >= jugador.x &&
       pelota.x <= jugador.x + jugador.ancho) {
     pelota.dirY = Direcciones.arriba;
+    pelota.acelerar();
   }
 
-  // Paredes laterales
-  if (pelota.x >= 1)  pelota.dirX = Direcciones.izquierda;
-  if (pelota.x <= -1) pelota.dirX = Direcciones.derecha;
+  // Paredes laterales → rebote + acelerar
+  if (pelota.x >= 1) {
+    pelota.dirX = Direcciones.izquierda;
+    pelota.acelerar();
+  }
+  if (pelota.x <= -1) {
+    pelota.dirX = Direcciones.derecha;
+    pelota.acelerar();
+  }
 }
 
 bool pelotaFueraDePantalla(ModeloPelota pelota) => pelota.y >= 1;

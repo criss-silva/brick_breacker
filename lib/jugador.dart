@@ -1,13 +1,12 @@
-// ============================================================
+
 //  jugador.dart
 //  Widget de la raqueta del jugador.
-//  No ha cambiado mucho respecto al original, pero ahora
 //  jugadorWidth puede cambiar dinámicamente desde PaginaPrincipal
-//  cuando el power-up rosa esté activo.
-// ============================================================
+//  cuando el power-up rosa esté activo, ya que hace crecer al jugador.
+
 
 import 'package:flutter/material.dart';
-
+//el jugador no se redibuja ni cambia su estado por lo tanto es statelessWidget
 class Jugador extends StatelessWidget {
   // Posición horizontal de la raqueta (-1.0 a 1.0)
   final double posX;
@@ -16,7 +15,7 @@ class Jugador extends StatelessWidget {
   // Normalmente es 0.4, pero el power-up rosa lo sube a 0.6
   final double jugadorWidth;
 
-  const Jugador({
+  const Jugador({ //constructor del jugador
     Key? key,
     required this.posX,
     required this.jugadorWidth,
@@ -24,14 +23,14 @@ class Jugador extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Container(//este es el dibujo del jugador
       // Calculamos el Alignment.x para que la raqueta empiece en posX
       // y tenga el ancho correcto centrado en ese punto
-      alignment: Alignment(
+      alignment: Alignment( //posiciona la raqueta
         (2 * posX + jugadorWidth) / (2 - jugadorWidth),
         0.9,
       ),
-      child: ClipRRect(
+      child: ClipRRect( //esto es el rectangulo redondeado
         borderRadius: BorderRadius.circular(10),
         child: Container(
           height: 10,

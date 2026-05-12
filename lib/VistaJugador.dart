@@ -1,7 +1,5 @@
-// ============================================================
 //  vista_jugador.dart
 //  Widget visual de la raqueta. Solo sabe dibujarse.
-// ============================================================
 
 import 'package:flutter/material.dart';
 

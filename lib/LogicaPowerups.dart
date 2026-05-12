@@ -1,16 +1,6 @@
-// ============================================================
 //  logica_powerups.dart
 //  Funciones para generar, mover y recoger power-ups.
-//  No importa Flutter.
-//
-//  NOTAS DE DISEÑO:
-//  - bolaInvencible tiene probabilidad propia más baja.
-//  - Los bloques pw* sueltan SIEMPRE su power-up al romperse
-//    (eso lo decide logica_ladrillos). Esta función solo se usa
-//    para ladrillos normales/regeneradores que sueltan power-ups
-//    aleatorios con probabilidad.
-//  - La velocidad de caída es más rápida que en la versión anterior.
-// ============================================================
+
 
 import 'dart:math';
 import 'ModeloJugador.dart';
@@ -27,11 +17,9 @@ const double probBolaInvencibleAleatoria = 0.08; // 8% del total de pw generados
 
 final _rng = Random();
 
-// ------------------------------------------------------------------
 // spawnPowerUpFijo
 // Genera un power-up del tipo indicado en la posición dada.
 // Lo llama logica_ladrillos cuando un bloque pw* se rompe.
-// ------------------------------------------------------------------
 void spawnPowerUpFijo(
     List<ModeloPowerUp> lista,
     TipoPowerUp tipo,
@@ -67,7 +55,7 @@ void intentarGenerarPowerUpAleatorio(
     tipo: tipo,
   ));
 }
-
+//sacamos un tipo de power up aleatorio seleccionando un indice aleatorio
 TipoPowerUp _elegirTipoAleatorio() {
   final double r = _rng.nextDouble();
   if (r < probBolaInvencibleAleatoria) return TipoPowerUp.bolaInvencible;
@@ -80,10 +68,8 @@ TipoPowerUp _elegirTipoAleatorio() {
   ][idx];
 }
 
-// ------------------------------------------------------------------
 // moverPowerUps
 // Baja todos los power-ups y elimina los que salen de pantalla.
-// ------------------------------------------------------------------
 void moverPowerUps(List<ModeloPowerUp> lista) {
   for (final pu in lista) {
     pu.y += velocidadCaidaPowerUp;
@@ -91,10 +77,8 @@ void moverPowerUps(List<ModeloPowerUp> lista) {
   lista.removeWhere((pu) => pu.y > 1.0);
 }
 
-// ------------------------------------------------------------------
 // comprobarRecogida
 // Devuelve los power-ups que la raqueta ha recogido y los elimina.
-// ------------------------------------------------------------------
 List<ModeloPowerUp> comprobarRecogida(
     List<ModeloPowerUp> lista,
     ModeloJugador jugador,

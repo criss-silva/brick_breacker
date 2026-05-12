@@ -1,8 +1,6 @@
-// ============================================================
 //  Powerup.dart
 //  Widget visual de un power-up cayendo.
 //  El color y forma dependen del TipoPowerUp.
-// ============================================================
 
 import 'package:flutter/material.dart';
 import 'modelos.dart';
