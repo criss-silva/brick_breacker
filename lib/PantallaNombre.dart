@@ -26,7 +26,22 @@ class _PantallaNombreState extends State<PantallaNombre> {
   // volver atrás a esta pantalla con el botón de retroceso).
   void _guardarYContinuar() {
     final nombre = _controller.text.trim(); // quitamos espacios extra
-    if (nombre.isEmpty) return;             // no hacemos nada si está vacío
+    if (nombre.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('¡Falta tu nombre!'),
+          content: const Text('Debes introducir un nombre para poder jugar.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Entendido'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
 
     // Guardamos el nombre en el estado global para que todas las pantallas
     // (ranking, victoria, game over) puedan acceder a él sin pasarlo por props.
