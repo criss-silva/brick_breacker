@@ -1,0 +1,10 @@
+export 'PaginaDeCubierta.dart';
+export 'PaginaPrincipal.dart';
+export 'Pantallafinal.dart';
+export 'PantallaNombre.dart';
+export 'PantallaRanking.dart';
+export 'PantallaVictoria.dart';
+export 'Powerup.dart';
+export 'VistaJugador.dart';
+export 'VistaLadrillo.dart';
+export 'VistaPelota.dart';

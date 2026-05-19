@@ -17,8 +17,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';    // <-- importamos provider
-import 'package:moviles/GameModel.dart';    // <-- el modelo que queremos proveer
-import 'package:moviles/PantallaNombre.dart';
+import 'package:moviles/modelos/GameModel.dart';    // <-- el modelo que queremos proveer
+import 'package:moviles/vistas/PantallaNombre.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,15 +29,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ChangeNotifierProvider envuelve toda la app.
-    // - create: crea la instancia de GameModel (solo una, como un singleton).
-    // - dispose: cuando la app se cierra, Provider llama a GameModel.dispose()
-    //   automáticamente, cancelando todos los timers.
+
     return ChangeNotifierProvider(
       create: (_) => GameModel(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: const PantallaNombre(), // pantalla inicial: pedir nombre
+        home: const PantallaNombre(),
       ),
     );
   }

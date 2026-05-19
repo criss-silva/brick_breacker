@@ -1,16 +1,15 @@
-//  PaginaDeCubierta.dart
-//  Pantalla de inicio antes de pulsar para jugar.
+//  Pagina de inicio antes de empezar a jugar
 
 import 'package:flutter/material.dart';
-//es statelesswidget ya que no maneja un estado mutable
+
 class Cubierta extends StatelessWidget {
-  final bool juegoEmpezado; //ha empezado o no el juego
+  final bool juegoEmpezado;
 
   const Cubierta({Key? key, required this.juegoEmpezado}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (juegoEmpezado) return const SizedBox.shrink(); //SizedBox.shrink crea el widget con 0 ancho y alto
+    if (juegoEmpezado) return const SizedBox.shrink();
 
     return Container( //container del menu principal
       alignment: const Alignment(0, -0.1),
@@ -21,20 +20,20 @@ class Cubierta extends StatelessWidget {
             'Pulsa para jugar',
             style: TextStyle(
               color: Colors.deepPurple[400],
-              fontSize: 22,
+              fontSize: 30,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 14),
           const Text(
             '🩷 Raqueta grande   🔵 Tiempo lento   💛 Vida extra   🟣 Bola invencible',
-            style: TextStyle(color: Colors.white70, fontSize: 11),
+            style: TextStyle(color: Colors.white70, fontSize: 20),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           const Text(
             '👻 Fantasma = ×2 puntos   ♻️ Regenerador = se repara solo',
-            style: TextStyle(color: Colors.white60, fontSize: 11),
+            style: TextStyle(color: Colors.white60, fontSize: 20),
             textAlign: TextAlign.center,
           ),
         ],

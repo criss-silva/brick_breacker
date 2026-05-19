@@ -6,9 +6,10 @@
 //  El fantasma tiene un borde punteado y es semi-transparente.
 
 import 'package:flutter/material.dart';
-import 'ModeloLadrillo.dart';
+import 'package:moviles/modelos/barrel_modelos.dart';
 
-class VistaLadrillo extends StatelessWidget { //clase que define la vista del ladrillo en sí
+
+class VistaLadrillo extends StatelessWidget {
   final ModeloLadrillo ladrillo;
   final double ancho;
   final double alto;
@@ -22,7 +23,7 @@ class VistaLadrillo extends StatelessWidget { //clase que define la vista del la
 
   @override
   Widget build(BuildContext context) {
-    // Ladrillos rotos o de tipo invisible no se dibujan
+    //los ladrillos que estan rotos o los que son del tipo invisible no se dibujan
     if (ladrillo.roto) return const SizedBox.shrink();
     if (ladrillo.tipo == TipoLadrillo.fantasma && !ladrillo.visible) {
       return const SizedBox.shrink();
@@ -45,7 +46,7 @@ class VistaLadrillo extends StatelessWidget { //clase que define la vista del la
           border: esFantasma
               ? Border.all(color: Colors.white70, width: 1.5)
               : null,
-          // Pequeño highlight superior para dar sensación 3D
+
           gradient: esFantasma
               ? null
               : LinearGradient(
@@ -57,79 +58,68 @@ class VistaLadrillo extends StatelessWidget { //clase que define la vista del la
             ],
           ),
         ),
-        // Indicador de vida restante: pequeños puntos en la parte inferior
         child: _indicadorVida(),
       ),
     );
   }
 
-  // Color según tipo y golpes restantes
   Color _colorActual() {
     final int g = ladrillo.golpesRestantes;
     final int gMax = ModeloLadrillo.golpesIniciales(ladrillo.tipo);
 
     switch (ladrillo.tipo) {
 
-    //Normales: gris claro → gris medio → gris oscuro
       case TipoLadrillo.normal1:
-        return const Color(0xFFB0BEC5); // azul-gris claro
+        return const Color(0xFFB0BEC5);
 
       case TipoLadrillo.normal2:
         return g == 2
-            ? const Color(0xFF78909C)   // azul-gris medio
-            : const Color(0xFF455A64);  // azul-gris oscuro (1 golpe restante)
-
+            ? const Color(0xFF78909C)
+            : const Color(0xFF455A64);
       case TipoLadrillo.normal3:
-        if (g == 3) return const Color(0xFF546E7A);   // más claro
-        if (g == 2) return const Color(0xFF37474F);   // intermedio
-        return       const Color(0xFF1C313A);          // más oscuro (1 golpe)
+        if (g == 3) return const Color(0xFF546E7A);
+        if (g == 2) return const Color(0xFF37474F);
+        return       const Color(0xFF1C313A);
 
-    //  Power-up rosa (raqueta grande): tonos rosa
       case TipoLadrillo.pwRosa:
         return g == 2
-            ? const Color(0xFFF48FB1)   // rosa claro
-            : const Color(0xFFAD1457);  // rosa oscuro
+            ? const Color(0xFFF48FB1)
+            : const Color(0xFFAD1457);
 
-    //Power-up azul (tiempo lento): tonos azul
       case TipoLadrillo.pwAzul:
         return g == 2
-            ? const Color(0xFF81D4FA)   // azul claro
-            : const Color(0xFF01579B);  // azul oscuro
-
-    //Power-up amarillo (vida extra): tonos amarillo
+            ? const Color(0xFF81D4FA)
+            : const Color(0xFF01579B);
       case TipoLadrillo.pwAmarillo:
         return g == 2
-            ? const Color(0xFFFFF176)   // amarillo claro
-            : const Color(0xFFF57F17);  // amarillo oscuro
+            ? const Color(0xFFFFF176)
+            : const Color(0xFFF57F17);
 
-    // Power-up morado (bola invencible): tonos morado
       case TipoLadrillo.pwMorado:
-        return const Color(0xFFCE93D8); // morado claro (1 solo golpe)
+        return const Color(0xFFCE93D8);
 
-    // Regenerador: tonos verde
+
       case TipoLadrillo.regenerador:
-      // Si está dañado (golpesRestantes < max) tira a verde oscuro
         return (g == gMax)
-            ? const Color(0xFFA5D6A7)   // verde claro (sano)
-            : const Color(0xFF2E7D32);  // verde oscuro (dañado)
+            ? const Color(0xFFA5D6A7)
+            : const Color(0xFF2E7D32);
 
-    //Fantasma: blanco semi-translúcido
+
       case TipoLadrillo.fantasma:
         return g == 2
-            ? const Color(0xFFE0E0E0)   // casi blanco
-            : const Color(0xFF9E9E9E);  // gris (ya recibió 1 golpe)
+            ? const Color(0xFFE0E0E0)
+            : const Color(0xFF9E9E9E);
 
-    // Special: dorado (solo se rompe con bolaInvencible)
       case TipoLadrillo.special:
-        return const Color(0xFFFFD700); // dorado
+        return const Color(0xFFFFD700);
     }
   }
 
-  // Puntos indicadores de vida (1 punto por golpe restante)
+
   Widget _indicadorVida() {
     final int g    = ladrillo.golpesRestantes;
     final int gMax = ModeloLadrillo.golpesIniciales(ladrillo.tipo);
-    if (gMax <= 1) return const SizedBox.shrink(); // sin indicador en 1 golpe
+    if (gMax <= 1) return const SizedBox.shrink();
 
     return Align(
       alignment: Alignment.bottomCenter,

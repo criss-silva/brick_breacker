@@ -18,7 +18,7 @@ class VistaJugador extends StatelessWidget {
     return Container(
       alignment: Alignment(
         (2 * posX + jugadorWidth) / (2 - jugadorWidth),
-        0.9,
+        0.8,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),

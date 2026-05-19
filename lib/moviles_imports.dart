@@ -17,29 +17,29 @@ export 'package:flutter/material.dart';
 export 'package:flutter/services.dart';
 
 // ── Modelos (estado puro, sin Flutter) ──────────────────────
-export 'package:moviles/ModeloPelota.dart';
-export 'package:moviles/ModeloJugador.dart';
-export 'package:moviles/ModeloLadrillo.dart';
-export 'package:moviles/modelos.dart';
+export 'package:moviles/modelos/ModeloPelota.dart';
+export 'package:moviles/modelos/ModeloJugador.dart';
+export 'package:moviles/modelos/ModeloLadrillo.dart';
+export 'package:moviles/modelos/modelos.dart';
 
 // ── Lógica de juego (sin Flutter) ───────────────────────────
-export 'package:moviles/LogicaPelota.dart';
-export 'package:moviles/LogicaJugador.dart';
-export 'package:moviles/LogicaLadrillos.dart';
-export 'package:moviles/LogicaPowerups.dart';
+export 'package:moviles/logica/LogicaPelota.dart';
+export 'package:moviles/logica/LogicaJugador.dart';
+export 'package:moviles/logica/LogicaLadrillos.dart';
+export 'package:moviles/logica/LogicaPowerups.dart';
 
 // ── Vistas (widgets Flutter) ─────────────────────────────────
-export 'package:moviles/VistaPelota.dart';
-export 'package:moviles/VistaJugador.dart';
-export 'package:moviles/VistaLadrillo.dart';
-export 'package:moviles/Powerup.dart';
-export 'package:moviles/PaginaDeCubierta.dart';
-export 'package:moviles/Pantallafinal.dart';
-export 'package:moviles/PantallaVictoria.dart';
+export 'package:moviles/vistas/VistaPelota.dart';
+export 'package:moviles/vistas/VistaJugador.dart';
+export 'package:moviles/vistas/VistaLadrillo.dart';
+export 'package:moviles/vistas/Powerup.dart';
+export 'package:moviles/vistas/PaginaDeCubierta.dart';
+export 'package:moviles/vistas/Pantallafinal.dart';
+export 'package:moviles/vistas/PantallaVictoria.dart';
 
 // ── Estado global ────────────────────────────────────────────
-export 'package:moviles/game_state.dart';
+export 'package:moviles/logica/game_state.dart';
 
 // ── Lógica de control extraída de PaginaPrincipal ───────────
 // Contiene _inicializarEstado, _empezarJuego, _perderVida, etc.
-export 'package:moviles/GameLogic.dart';
+export 'package:moviles/logica/GameLogic.dart';

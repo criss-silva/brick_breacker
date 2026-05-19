@@ -1,32 +1,19 @@
-//  pantalla_final.dart
-//
-//  Widget que se muestra encima del juego cuando el jugador pierde
-//  todas las vidas (Game Over). Tiene dos modos de renderizado:
-//
-//  · juegoAcabado = true  → muestra el overlay de "GAME OVER" con
-//    la puntuación final y tres botones de acción.
-//  · juegoAcabado = false → actúa como HUD en partida: muestra
-//    los corazones de vida y el marcador en las esquinas.
-//
-//  Al montarse, intenta guardar automáticamente el resultado en el
-//  ranking (solo una vez, gracias al flag _guardado).
+
 
 import 'package:flutter/material.dart';
-import 'package:moviles/game_state.dart';
-import 'package:moviles/PantallaRanking.dart';
-import 'package:moviles/PantallaNombre.dart';
+import 'barrel_vistas.dart';
+import 'package:moviles/logica/barrel_logica.dart';
 
 class PantallaFinal extends StatefulWidget {
   // true cuando el jugador ha perdido y queremos mostrar el Game Over
   final bool juegoAcabado;
 
-  // Callback para reiniciar la partida (lo conecta PaginaPrincipal)
+
   final VoidCallback function;
 
-  // Número de vidas restantes (se usan para los iconos de corazón en el HUD)
+  // vidas restantes
   final int vidas;
 
-  // Puntuación acumulada en esta partida
   final int puntuacion;
 
   const PantallaFinal({
@@ -42,18 +29,16 @@ class PantallaFinal extends StatefulWidget {
 }
 
 class _PantallaFinalState extends State<PantallaFinal> {
-  // Evita guardar el resultado más de una vez si el widget se reconstruye
   bool _guardado = false;
 
   @override
   void initState() {
     super.initState();
-    // Intentamos guardar en cuanto el widget se monta por primera vez
+
     _guardarResultado();
   }
 
-  // Lee el nombre del jugador de GameState y añade la entrada al ranking.
-  // La guarda de _guardado impide duplicados si build() llama a este método
+
   Future<void> _guardarResultado() async {
     if (widget.juegoAcabado && !_guardado) {
       _guardado = true;
@@ -65,16 +50,14 @@ class _PantallaFinalState extends State<PantallaFinal> {
     }
   }
 
-  // Navega a la pantalla de ranking sin eliminar la pila de navegación,
-  // para que el usuario pueda volver atrás con el botón de retroceso.
+
   void _verRanking() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const PantallaRanking()),
     );
   }
 
-  // Vuelve al menú principal limpiando todo el historial de navegación
-  // y reseteando el estado global de la partida.
+
   void _volverMenu() {
     GameState.reset();
     Navigator.of(context).pushAndRemoveUntil(
@@ -83,19 +66,16 @@ class _PantallaFinalState extends State<PantallaFinal> {
     );
   }
 
-  // Decide qué renderizar según el estado del juego:
-  //   · Si juegoAcabado → overlay completo de Game Over
-  //   · Si no            → HUD con solo vidas y puntuacion
   @override
   Widget build(BuildContext context) {
     if (widget.juegoAcabado) {
-      // Llamada de seguridad extra por si initState no llegó a guardar
+
       _guardarResultado();
 
-      // GAME OVER
+
       return Stack(
         children: [
-          // Fondo semitransparente para oscurecer el juego por debajo
+
           Container(color: Colors.black54),
 
           Center(
@@ -103,7 +83,6 @@ class _PantallaFinalState extends State<PantallaFinal> {
               mainAxisSize: MainAxisSize.min,
               children: [
 
-                // Título
                 const Text(
                   'G A M E   O V E R',
                   style: TextStyle(
@@ -157,8 +136,7 @@ class _PantallaFinalState extends State<PantallaFinal> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // Botón MENÚ PRINCIPAL: sale completamente y limpia la sesión
+//boton para el menu
                 GestureDetector(
                   onTap: _volverMenu,
                   child: ClipRRect(
@@ -182,15 +160,14 @@ class _PantallaFinalState extends State<PantallaFinal> {
       );
     }
 
-    // Cuando el juego sigue activo este widget actúa como capa de información:
-    // corazones a la izquierda y puntuación a la derecha.
+
     return Stack(
       children: [
-        // Corazones de vida (uno por cada vida restante)
+ //corazones de vidas restantes
         Align(
           alignment: Alignment.topLeft,
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.only(top: 20, right: 10,),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: List.generate(
@@ -205,11 +182,11 @@ class _PantallaFinalState extends State<PantallaFinal> {
           ),
         ),
 
-        // Marcador de puntuación en la esquina superior derecha
+        //ountuacion
         Align(
           alignment: Alignment.topRight,
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.only(top: 20, right: 10,),
             child: Text(
               '${widget.puntuacion}',
               style: const TextStyle(
