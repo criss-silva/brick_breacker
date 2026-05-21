@@ -1,4 +1,4 @@
-//  Pagina de inicio antes de empezar a jugar
+
 
 import 'package:flutter/material.dart';
 

@@ -174,29 +174,59 @@ class GameModel extends ChangeNotifier {
       vidas:            _vidas,
       vidasMax:         kVidasMaximas,
       bolaInvencible:   _bolaInvencible,
-      onEstadoCambiado: (fn) { fn(); notifyListeners(); }, // <-- aquí el cambio clave
+      onEstadoCambiado: (fn) { fn(); notifyListeners(); },
       timerRaqueta:     _timerEfectoRaqueta,
       timerLento:       _timerEfectoLento,
       timerInvencible:  _timerBolaInvencible,
     );
-    _timerEfectoRaqueta  = resultado.timerRaqueta;
-    _timerEfectoLento    = resultado.timerLento;
-    _timerBolaInvencible = resultado.timerInvencible;
-    _bolaInvencible      = resultado.bolaInvencible;
-    _vidas               = resultado.vidas;
+
+    _vidas = resultado.vidas;
+
+
+    if (tipo == TipoPowerUp.tiempoLento) {
+      _timerEfectoLento?.cancel();
+      _timerEfectoLento = Timer(const Duration(seconds: 10), () {
+        _timerEfectoLento = null;
+        notifyListeners();
+      });
+    }
+
+
+    if (tipo == TipoPowerUp.bolaInvencible) {
+      _bolaInvencible = true;
+      _timerBolaInvencible?.cancel();
+      _timerBolaInvencible = Timer(const Duration(seconds: 10), () {
+        _bolaInvencible = false;
+        _timerBolaInvencible = null;
+        notifyListeners();
+      });
+    }
+
+
+    if (tipo == TipoPowerUp.racketaGrande) {
+      _timerEfectoRaqueta?.cancel();
+      _jugador.ancho = ModeloJugador.anchoGrande;
+      _timerEfectoRaqueta = Timer(const Duration(seconds: 10), () {
+        _jugador.resetear();
+        _timerEfectoRaqueta = null;
+        notifyListeners();
+      });
+    }
   }
 
   void _cancelarEfectos() {
-    final resultado = cancelarEfectosTemporales(
-      jugador:        _jugador,
-      timerRaqueta:   _timerEfectoRaqueta,
-      timerLento:     _timerEfectoLento,
-      timerInvencible: _timerBolaInvencible,
-    );
-    _timerEfectoRaqueta  = resultado.timerRaqueta;
-    _timerEfectoLento    = resultado.timerLento;
-    _timerBolaInvencible = resultado.timerInvencible;
-    _bolaInvencible      = resultado.bolaInvencible;
+
+    _timerEfectoRaqueta?.cancel();
+    _timerEfectoLento?.cancel();
+    _timerBolaInvencible?.cancel();
+
+
+    _timerEfectoRaqueta  = null;
+    _timerEfectoLento    = null;
+    _timerBolaInvencible = null;
+
+    _bolaInvencible = false;
+    _jugador.resetear();
   }
 
 

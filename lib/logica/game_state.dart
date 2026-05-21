@@ -25,7 +25,7 @@ class EntradaRanking {
     'score': puntuacion,
   }; //funcion para guardar el objeto de la clase a un mapa json, pasandolo a string para que json pueda leerlo
 
-  factory EntradaRanking.fromJson(Map<String, dynamic> json) { //de json a objeto
+  factory EntradaRanking.fromJson(Map<String, dynamic> json) { //de json a objetoFcom
     return EntradaRanking(
       nombre: json['name'] as String,
       fecha: DateTime.parse(json['date'] as String),

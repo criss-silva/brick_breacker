@@ -178,10 +178,10 @@ ResultadoOleada nuevaOleada({
   required ModeloJugador jugador,
   required List<ModeloPowerUp> powerUpsActivos,
 }) {
-  // Pequeño bonus por completar la oleada con las vidas que quedan
+  // pequeño bonus por completar la oleada con las vidas que quedan
   final int bonus = vidas * 50;
 
-  // Reseteamos pelota y raqueta igual que al perder una vida
+  // reseteamos pelota y raqueta igual que al perder una vida
   pelota.resetear();
   jugador.resetear();
   powerUpsActivos.clear();

@@ -16,7 +16,7 @@ const double espacioVertical   = 0.04;
 const double primerLadrilloY   = -0.85;
 const double _margenLateral    = 0.02;
 
-// X de inicio para centrar todas las columnas
+
 const double _anchoTotal = numColumnas * anchoLadrillo +
     (numColumnas - 1) * espacioHorizontal;
 const double primerLadrilloX = //esto es para centrar el bloque de ladrillos
@@ -84,6 +84,7 @@ TipoLadrillo _elegirTipo(int fila, bool fantasmaColocado) {
       if (r < 0.15) return TipoLadrillo.special;
       if (r < 0.30) return TipoLadrillo.pwMorado;
       if (r < 0.45) return TipoLadrillo.pwRosa;
+      if (!fantasmaColocado && r < 0.50) return TipoLadrillo.fantasma;
       if (r < 0.60) return TipoLadrillo.pwAzul;
       if (r < 0.75) return TipoLadrillo.pwAmarillo;
       return TipoLadrillo.normal1;
@@ -93,8 +94,10 @@ TipoLadrillo _elegirTipo(int fila, bool fantasmaColocado) {
       if (r < 0.10) return TipoLadrillo.special;
       if (r < 0.25) return TipoLadrillo.pwMorado;
       if (r < 0.40) return TipoLadrillo.regenerador;
+      if (!fantasmaColocado && r < 0.50) return TipoLadrillo.fantasma;
       if (r < 0.55) return TipoLadrillo.pwRosa;
       if (r < 0.70) return TipoLadrillo.pwAzul;
+
       return TipoLadrillo.normal3;
 
   // fila 3
@@ -154,7 +157,7 @@ List<ResultadoColision> comprobarColisionLadrillos(
 
   for (final l in ladrillos) {
     if (l.roto) continue;
-    // Fantasmas invisibles no colisionan
+
     if (l.tipo == TipoLadrillo.fantasma && !l.visible) continue;
     final double margen = (l.tipo == TipoLadrillo.normal1) ? 0.01 : 0.005;
     final bool colision =
@@ -165,22 +168,22 @@ List<ResultadoColision> comprobarColisionLadrillos(
 
     if (!colision) continue;
 
-    // Rebote siempre al tocar
+
     _rebotar(pelota, l.x, l.y);
 
     // Daño
-    bool roto = bolaInvencible;
-    if (!roto) {
+    if (bolaInvencible) {
+      l.golpesRestantes = 0;
+    } else {
       l.golpesRestantes--;
       if (l.tipo == TipoLadrillo.regenerador) {
         l.ultimoGolpeMs = DateTime.now().millisecondsSinceEpoch;
       }
-      if (l.tipo == TipoLadrillo.normal1 || l.golpesRestantes <= 0) {
-        roto = true;
-        if (l.tipo == TipoLadrillo.normal1) l.golpesRestantes = 0;
+
+      if (l.tipo == TipoLadrillo.normal1) {
+        l.golpesRestantes = 0;
       }
     }
-
     if (l.roto) {
       // Solo soltar power-up si no es normal1
       TipoPowerUp? powerUpSoltado = null;
@@ -204,7 +207,6 @@ List<ResultadoColision> comprobarColisionLadrillos(
 
   return resultados;
 }
-
 //tipos de power up segun el ladrillo
 TipoPowerUp? _powerUpDeTipo(TipoLadrillo t) {
   switch (t) {

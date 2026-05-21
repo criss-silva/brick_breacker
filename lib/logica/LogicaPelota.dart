@@ -23,7 +23,7 @@ void actualizarDireccion(ModeloPelota pelota, ModeloJugador jugador) {
     pelota.acelerar();
   } // acelera cuando rebota con un bloque
 
-  if (pelota.y >= 0.9 &&
+  if (pelota.y >= 0.8 &&
       pelota.x >= jugador.x &&
       pelota.x <= jugador.x + jugador.ancho) {
     pelota.dirY = Direcciones.arriba;
