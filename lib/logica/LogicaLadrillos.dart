@@ -5,18 +5,15 @@
 
 
 import 'dart:math';
-import 'ModeloLadrillo.dart';
-import 'ModeloPelota.dart';
-import 'modelos.dart';
+import 'package:moviles/modelos/barrel_modelos.dart';
 
-// Constantes de la cuadrícula
 const int    numColumnas       = 7;
 const int    numFilas          = 4;
 const double anchoLadrillo     = 0.26;
 const double altoLadrillo      = 0.06;
 const double espacioHorizontal = 0.02;
 const double espacioVertical   = 0.04;
-const double primerLadrilloY   = -0.85; // Y de la fila más alta (más abajo)
+const double primerLadrilloY   = -0.85;
 const double _margenLateral    = 0.02;
 
 // X de inicio para centrar todas las columnas
@@ -27,22 +24,15 @@ const double primerLadrilloX = //esto es para centrar el bloque de ladrillos
 
 final _rng = Random();
 
-//  RESULTADO DE COLISIÓN
-//  Devuelve los efectos de un golpe en un ladrillo.
+
 class ResultadoColision {
-  // Puntos ganados (0 si el ladrillo no se ha roto del todo)
+
   final int puntosGanados;
-
-  // true si el ladrillo era fantasma y acaba de romperse (x2 score)
   final bool multiplicarPuntuacion;
-
-  // Power-up que suelta el ladrillo al romperse (null si ninguno)
   final TipoPowerUp? tipoPowerUpSoltado;
 
-  // Posición X del ladrillo golpeado (para spawnear el power-up)
   final double ladrilloX;
 
-  // Posición Y del ladrillo golpeado
   final double ladrilloY;
 
   const ResultadoColision({
@@ -54,8 +44,8 @@ class ResultadoColision {
   });
 }
 
-//  GENERACIÓN DE LADRILLOS
-List<ModeloLadrillo> generarLadrillos() {//vamos a tener una lista de todos los ladrillos
+
+List<ModeloLadrillo> generarLadrillos() {
   final List<ModeloLadrillo> lista = [];
   bool fantasmaColocado = false;
 
@@ -68,8 +58,6 @@ List<ModeloLadrillo> generarLadrillos() {//vamos a tener una lista de todos los 
 
       final TipoLadrillo tipo = _elegirTipo(fila, fantasmaColocado);
       if (tipo == TipoLadrillo.fantasma) fantasmaColocado = true;
-
-      // En fila 4 todos aguantan al menos 3 golpes
       final int golpes = (fila == 3)
           ? _max3(ModeloLadrillo.golpesIniciales(tipo))
           : ModeloLadrillo.golpesIniciales(tipo);
@@ -131,8 +119,6 @@ TipoLadrillo _elegirTipo(int fila, bool fantasmaColocado) {
 bool todosTroceados(List<ModeloLadrillo> ladrillos) =>
     ladrillos.every((l) => l.roto);
 
-// Llamar cada segundo (o en cada frame comprobando el timestamp).
-// Repara los ladrillos regeneradores que llevan más de kRegenSeg sin golpe.
 void tickRegeneradores(List<ModeloLadrillo> ladrillos) {
   final int ahora = DateTime.now().millisecondsSinceEpoch;
   for (final l in ladrillos) {
@@ -148,8 +134,7 @@ void tickRegeneradores(List<ModeloLadrillo> ladrillos) {
 }
 
 const int kFantasmaIntervaloMs = 1500; // alterna cada 1.5 s
-
-// Actualiza la visibilidad del bloque fantasma en función del tiempo.
+// visibilidad bloque fantasma
 void tickFantasma(List<ModeloLadrillo> ladrillos, int ahoraMs) {
   for (final l in ladrillos) {
     if (l.tipo != TipoLadrillo.fantasma || l.roto) continue;
@@ -160,9 +145,6 @@ void tickFantasma(List<ModeloLadrillo> ladrillos, int ahoraMs) {
 
 
 
-// Procesa todas las colisiones de la pelota con los ladrillos en este frame.
-// [bolaInvencible]: si true, cualquier ladrillo se rompe de 1 golpe.
-// Devuelve una lista de ResultadoColision (uno por ladrillo golpeado).
 List<ResultadoColision> comprobarColisionLadrillos(
     ModeloPelota pelota,
     List<ModeloLadrillo> ladrillos, {
@@ -213,7 +195,6 @@ List<ResultadoColision> comprobarColisionLadrillos(
         ladrilloY:              l.y,
       ));
     } else {
-      // Golpe intermedio: rebotó pero no se rompió
       resultados.add(ResultadoColision(
         ladrilloX: l.x,
         ladrilloY: l.y,
@@ -224,7 +205,7 @@ List<ResultadoColision> comprobarColisionLadrillos(
   return resultados;
 }
 
-// Power-up que suelta cada tipo al romperse
+//tipos de power up segun el ladrillo
 TipoPowerUp? _powerUpDeTipo(TipoLadrillo t) {
   switch (t) {
     case TipoLadrillo.pwRosa:     return TipoPowerUp.racketaGrande;
@@ -235,7 +216,7 @@ TipoPowerUp? _powerUpDeTipo(TipoLadrillo t) {
   }
 }
 
-//  Rebote por lado más cercano
+
 void _rebotar(ModeloPelota pelota, double lx, double ly) {
   final double distIzq    = (pelota.x - lx).abs();
   final double distDer    = (pelota.x - (lx + anchoLadrillo)).abs();

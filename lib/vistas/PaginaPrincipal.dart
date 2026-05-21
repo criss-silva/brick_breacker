@@ -21,33 +21,24 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';       // <-- necesario para watch/read
-import 'package:moviles/GameModel.dart';        // <-- el nuevo modelo central
-import 'package:moviles/VistaJugador.dart';
-import 'package:moviles/VistaPelota.dart';
-import 'package:moviles/VistaLadrillo.dart';
-import 'package:moviles/Powerup.dart';
-import 'package:moviles/Pantallafinal.dart';
-import 'package:moviles/PantallaVictoria.dart';
-import 'package:moviles/PaginaDeCubierta.dart';
-import 'package:moviles/LogicaLadrillos.dart';  // anchoLadrillo, altoLadrillo
+import 'package:provider/provider.dart';
+import 'barrel_vistas.dart';
+import 'package:moviles/modelos/barrel_modelos.dart';
+import 'package:moviles/logica/barrel_logica.dart';
 
-// PaginaPrincipal ahora es StatelessWidget.
-// Ya no necesita ser Stateful porque el estado vive en GameModel.
+
 class PaginaPrincipal extends StatelessWidget {
   const PaginaPrincipal({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // context.watch<GameModel>() suscribe este widget al modelo.
-    // Cada llamada a notifyListeners() en GameModel reconstruye este build().
+
     final GameModel modelo = context.watch<GameModel>();
 
     return RawKeyboardListener(
       focusNode: FocusNode(),
       autofocus: true,
       onKey: (event) {
-        // context.read: solo necesitamos llamar al método, no suscribirnos.
         if (event.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
           context.read<GameModel>().moverIzquierda();
         } else if (event.isKeyPressed(LogicalKeyboardKey.arrowRight)) {
@@ -68,10 +59,9 @@ class PaginaPrincipal extends StatelessWidget {
             child: Stack(
               children: [
 
-                // 1. Pantalla de inicio
+
                 Cubierta(juegoEmpezado: modelo.juegoEmpezado),
 
-                // 2. HUD de vidas y puntos / overlay Game Over
                 PantallaFinal(
                   juegoAcabado: modelo.juegoAcabado,
                   function:     () => context.read<GameModel>().reiniciar(),
@@ -79,34 +69,29 @@ class PaginaPrincipal extends StatelessWidget {
                   puntuacion:   modelo.puntuacion,
                 ),
 
-                // 3. Overlay de victoria
                 PantallaVictoria(
                   juegoGanado: modelo.juegoGanado,
                   onReiniciar: () => context.read<GameModel>().reiniciar(),
                   puntuacion:  modelo.puntuacion,
                 ),
 
-                // 4. Pelota
                 VistaPelota(
                   posX:       modelo.pelota.x,
                   posY:       modelo.pelota.y,
                   invencible: modelo.bolaInvencible,
                 ),
 
-                // 5. Raqueta
                 VistaJugador(
                   posX:         modelo.jugador.x,
                   jugadorWidth: modelo.jugador.ancho,
                 ),
 
-                // 6. Ladrillos
                 ...modelo.ladrillos.map((l) => VistaLadrillo(
                   ladrillo: l,
                   ancho:    anchoLadrillo,
                   alto:     altoLadrillo,
                 )),
 
-                // 7. Power-ups cayendo
                 ...modelo.powerUpsActivos.map((pu) => PowerUpWidget(
                   posX: pu.x,
                   posY: pu.y,

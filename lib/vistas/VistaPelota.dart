@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 class VistaPelota extends StatelessWidget {
   final double posX;
   final double posY;
-  // true cuando el power-up bolaInvencible está activo
   final bool invencible;
 
   const VistaPelota({
@@ -19,14 +18,14 @@ class VistaPelota extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color color = invencible ? Colors.deepPurpleAccent : Colors.lightBlueAccent;
-    return Container( // el dibujo de la pelota en sí
+    return Container(
       alignment: Alignment(posX, posY),
       child: Container(
         height: 15,
         width: 15,
         decoration: BoxDecoration(
-          color: color, //el color asignado arriba
-          shape: BoxShape.circle, //es un circulo
+          color: color,
+          shape: BoxShape.circle,
           boxShadow: invencible
               ? [BoxShadow(color: Colors.deepPurple.withOpacity(0.7), blurRadius: 10, spreadRadius: 2)]
               : null,

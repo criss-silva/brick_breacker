@@ -1,6 +1,4 @@
-//  modelo_jugador.dart
-//  Estado puro de la raqueta: posición y ancho.
-//  Solo es la arquitectura en sí, no sabe nada de lo que pasa fuera de su estructura
+// clase para el tamaño de la raqueta
 
 class ModeloJugador {
   double x;

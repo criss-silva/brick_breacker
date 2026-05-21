@@ -3,23 +3,18 @@
 
 
 import 'dart:math';
-import 'ModeloJugador.dart';
-import 'modelos.dart';
+import 'package:moviles/modelos/barrel_modelos.dart';
 
-const double velocidadCaidaPowerUp = 0.018;  // más rápido que antes (era 0.010)
+const double velocidadCaidaPowerUp = 0.018;
 
-// Probabilidad de que un ladrillo normal suelte power-up al romperse
 const double probPowerUpNormal = 0.35;
 
-// Probabilidad de bolaInvencible dentro del pool aleatorio
-// (solo cuando se genera un pw aleatorio desde ladrillo normal)
-const double probBolaInvencibleAleatoria = 0.08; // 8% del total de pw generados
+
+const double probBolaInvencibleAleatoria = 0.08;
 
 final _rng = Random();
 
-// spawnPowerUpFijo
-// Genera un power-up del tipo indicado en la posición dada.
-// Lo llama logica_ladrillos cuando un bloque pw* se rompe.
+
 void spawnPowerUpFijo(
     List<ModeloPowerUp> lista,
     TipoPowerUp tipo,
@@ -34,12 +29,7 @@ void spawnPowerUpFijo(
   ));
 }
 
-// ------------------------------------------------------------------
-// intentarGenerarPowerUpAleatorio
-// Para ladrillos normales/regeneradores que se rompen: con probabilidad
-// [probPowerUpNormal] sueltan un power-up aleatorio.
-// bolaInvencible aparece con [probBolaInvencibleAleatoria].
-// ------------------------------------------------------------------
+
 void intentarGenerarPowerUpAleatorio(
     List<ModeloPowerUp> lista,
     double lx,
@@ -69,7 +59,7 @@ TipoPowerUp _elegirTipoAleatorio() {
 }
 
 // moverPowerUps
-// Baja todos los power-ups y elimina los que salen de pantalla.
+// Baja todos los power-ups y elimina los que salen de pantalla
 void moverPowerUps(List<ModeloPowerUp> lista) {
   for (final pu in lista) {
     pu.y += velocidadCaidaPowerUp;
@@ -77,8 +67,7 @@ void moverPowerUps(List<ModeloPowerUp> lista) {
   lista.removeWhere((pu) => pu.y > 1.0);
 }
 
-// comprobarRecogida
-// Devuelve los power-ups que la raqueta ha recogido y los elimina.
+// comprobar recogida de los power ups con la raqueta
 List<ModeloPowerUp> comprobarRecogida(
     List<ModeloPowerUp> lista,
     ModeloJugador jugador,

@@ -1,15 +1,14 @@
-//  modelos.dart
-//  Modelos de datos de los power-ups.
+
 
 
 enum TipoPowerUp {
   racketaGrande,   // power up rosa
   tiempoLento,     // power up Azul claro
   vidaExtra,       // power up Amarillo
-  bolaInvencible,  // Morado — rompe cualquier bloque de 1 golpe
+  bolaInvencible,  // power up morado
 }
 
-/// Representa un power-up cayendo por la pantalla
+
 class ModeloPowerUp {
   double x;
   double y;

@@ -1,32 +1,31 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-//esta es la clase para el ranking
+
+
+//clase que usamos para ver el ranking, que tiene el nombre dle jugaodr, su puntuacion y la fecha
 class GameState {
-  static String JugadorActual = ''; //el nombre del jugador
+  static String JugadorActual = '';
   static int puntuacion = 0;
 
-  static void reset() { //método para resetear
+  static void reset() {
     JugadorActual = '';
     puntuacion = 0;
-  }
+  } //para resetear el jugador y la puntuacion
 }
 
-class EntradaRanking { //esta es la entrada de cada jugador en cada partida
+class EntradaRanking {
   final String nombre;
   final DateTime fecha;
   final int puntuacion;
-//constructor, todos los parámtros son necesarios
   EntradaRanking({required this.nombre, required this.fecha, required this.puntuacion});
 
-  Map<String, dynamic> toJson() => { //esto guarda el objeto de la clase en sí a un mapa de tipo json
+  Map<String, dynamic> toJson() => {
     'name': nombre,
-    'date': fecha.toIso8601String(),//esto es para pasarlo a un formato que json pueda leer
+    'date': fecha.toIso8601String(),
     'score': puntuacion,
-  };
+  }; //funcion para guardar el objeto de la clase a un mapa json, pasandolo a string para que json pueda leerlo
 
-  factory EntradaRanking.fromJson(Map<String, dynamic> json) { //este lo hace al reves, el json lo pasa a objeto
-  //este método es necesario para sacar todos los datos que están en memoria y la aplicación pueda leerlos del json
-  //Usamos el constructor factory ya que necesitamos hacer operaciones complejas antes de crear la instancia
+  factory EntradaRanking.fromJson(Map<String, dynamic> json) { //de json a objeto
     return EntradaRanking(
       nombre: json['name'] as String,
       fecha: DateTime.parse(json['date'] as String),

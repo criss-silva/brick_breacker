@@ -2,10 +2,9 @@
 //  Movimiento y colisión de bordes/raqueta de la pelota.
 //  No importa Flutter.
 
-import 'ModeloPelota.dart';
-import 'ModeloJugador.dart';
+import 'package:moviles/modelos/barrel_modelos.dart';
 
-// Factor reductor cuando el power-up tiempoLento está activo
+
 const double _factorLento = 0.5;
 
 void moverPelota(ModeloPelota pelota, {bool tiempoLento = false}) {
@@ -18,28 +17,24 @@ void moverPelota(ModeloPelota pelota, {bool tiempoLento = false}) {
 }
 
 void actualizarDireccion(ModeloPelota pelota, ModeloJugador jugador) {
-  // Techo → rebote + acelerar
+
   if (pelota.y <= -1) {
     pelota.dirY = Direcciones.abajo;
     pelota.acelerar();
-  }
+  } // acelera cuando rebota con un bloque
 
-  // Raqueta → rebote + acelerar
   if (pelota.y >= 0.9 &&
       pelota.x >= jugador.x &&
       pelota.x <= jugador.x + jugador.ancho) {
     pelota.dirY = Direcciones.arriba;
-    pelota.acelerar();
   }
 
-  // Paredes laterales → rebote + acelerar
   if (pelota.x >= 1) {
     pelota.dirX = Direcciones.izquierda;
-    pelota.acelerar();
   }
   if (pelota.x <= -1) {
     pelota.dirX = Direcciones.derecha;
-    pelota.acelerar();
+
   }
 }
 

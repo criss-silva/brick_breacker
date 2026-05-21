@@ -3,7 +3,8 @@
 //  El color y forma dependen del TipoPowerUp.
 
 import 'package:flutter/material.dart';
-import 'modelos.dart';
+import 'package:moviles/modelos/barrel_modelos.dart';
+
 
 class PowerUpWidget extends StatelessWidget {
   final double posX;
